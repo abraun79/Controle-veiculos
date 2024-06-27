@@ -100,6 +100,9 @@ cat <<EOT | sudo tee /var/www/html/veiculos/index.php
         <form action="relatorio.php" method="get">
             <input type="submit" value="Gerar Relatório">
         </form>
+        <form action="registra_volta.html" method="get">
+            <input type="submit" value="Registrar Retorno">
+        </form>
     </div>
     <script src="scripts.js"></script>
 </body>
@@ -149,83 +152,73 @@ if (\$conn->query(\$sql) === TRUE) {
 ?>
 EOT
 
-# Criar arquivo styles.css
-cat <<EOT | sudo tee /var/www/html/veiculos/styles.css
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
+# Criar arquivo registra_volta.html
+cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Volta de Veículo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Registrar Volta de Veículo</h1>
+        <form id="registro-volta-form" action="registra_volta.php" method="post">
+            <label for="placa">Placa do Veículo:</label>
+            <select id="placa" name="placa" required>
+                <option value="APT-1010">Placa: APT-1010</option>
+                <option value="APT-1011">Placa: APT-1011</option>
+            </select>
+
+            <label for="quilometragem-volta">Quilometragem de Volta:</label>
+            <input type="number" id="quilometragem-volta" name="quilometragem_volta" required>
+
+            <label for="data-hora-volta">Data e Hora de Volta:</label>
+            <input type="datetime-local" id="data-hora-volta" name="data_hora_volta" required>
+
+            <input type="submit" value="Registrar Volta">
+        </form>
+    </div>
+</body>
+</html>
+EOT
+
+# Criar arquivo registra_volta.php
+cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.php
+<?php
+\$host = 'localhost';
+\$db = 'controle_veiculos';
+\$user = 'teste';
+\$pass = 'test@12345';
+
+\$conn = new mysqli(\$host, \$user, \$pass, \$db);
+
+if (\$conn->connect_error) {
+    die("Connection failed: " . \$conn->connect_error);
 }
 
-.container {
-    width: 50%;
-    margin: 50px auto;
-    background-color: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+\$placa = \$_POST['placa'];
+\$quilometragem_volta = \$_POST['quilometragem_volta'];
+\$data_hora_volta = \$_POST['data_hora_volta'];
+
+\$veiculo_id_query = "SELECT id FROM veiculos WHERE placa='\$placa'";
+\$veiculo_id_result = \$conn->query(\$veiculo_id_query);
+\$veiculo_id_row = \$veiculo_id_result->fetch_assoc();
+\$veiculo_id = \$veiculo_id_row['id'];
+
+\$sql = "UPDATE entradas_saidas SET quilometragem_volta='\$quilometragem_volta', data_hora_volta='\$data_hora_volta' 
+        WHERE veiculo_id='\$veiculo_id' AND quilometragem_volta IS NULL";
+
+if (\$conn->query(\$sql) === TRUE) {
+    echo json_encode(['status' => 'success']);
+} else {
+    echo json_encode(['status' => 'error', 'message' => \$conn->error]);
 }
 
-h1, h2 {
-    color: #333;
-}
-
-form {
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
-    color: #666;
-}
-
-input[type="text"], input[type="number"], input[type="datetime-local"], select {
-    width: calc(100% - 22px);
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-input[type="submit"] {
-    background-color: #5cb85c;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-input[type="submit"]:hover {
-    background-color: #4cae4c;
-}
-
-.success {
-    color: green;
-}
-
-.error {
-    color: red;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-table, th, td {
-    border: 1px solid #ddd;
-}
-
-th, td {
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background-color: #f4f4f4;
-}
+\$conn->close();
+?>
 EOT
 
 # Criar arquivo relatorio.php
@@ -240,19 +233,18 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
 </head>
 <body>
     <div class="container">
-        <h1>Relatório de Saída e Retorno de Veículos</h1>
-        <form action="" method="get">
+        <h1>Relatório de Veículos</h1>
+        <form action="relatorio.php" method="get">
             <label for="data_inicio">Data Início:</label>
-            <input type="date" id="data_inicio" name="data_inicio" required>
-            
+            <input type="datetime-local" id="data_inicio" name="data_inicio" required>
+
             <label for="data_fim">Data Fim:</label>
-            <input type="date" id="data_fim" name="data_fim" required>
-            
+            <input type="datetime-local" id="data_fim" name="data_fim" required>
+
             <input type="submit" value="Gerar Relatório">
         </form>
-
         <?php
-        if (\$_SERVER["REQUEST_METHOD"] == "GET" && isset(\$_GET['data_inicio']) && isset(\$_GET['data_fim'])) {
+        if (isset(\$_GET['data_inicio']) && isset(\$_GET['data_fim'])) {
             \$host = 'localhost';
             \$db = 'controle_veiculos';
             \$user = 'teste';
@@ -362,9 +354,63 @@ if (\$_SERVER["REQUEST_METHOD"] == "POST" && isset(\$_POST['data_inicio']) && is
 ?>
 EOT
 
+# Criar arquivo styles.css
+cat <<EOT | sudo tee /var/www/html/veiculos/styles.css
+body {
+    font-family: Arial, sans-serif;
+}
+.container {
+    width: 50%;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+h1 {
+    text-align: center;
+}
+form {
+    display: flex;
+    flex-direction: column;
+}
+label {
+    margin-top: 10px;
+}
+input, select {
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+}
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+th {
+    background-color: #f2f2f2;
+}
+EOT
+
 # Configuração final
 sudo chown -R www-data:www-data /var/www/html/veiculos
 sudo chmod -R 755 /var/www/html/veiculos
 
 echo "Instalação e configuração concluídas. Acesse http://localhost/veiculos para utilizar o sistema."
+
 
