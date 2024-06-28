@@ -75,16 +75,16 @@ cat <<EOT | sudo tee /var/www/html/veiculos/index.php
         <h1>Controle de Saída de Veículos</h1>
         <form id="registro-saida-form" action="registra_saida.php" method="post">
             <label for="placa">Placa do Veículo:</label>
-            <input id="placa" name="placa" required>
+            <select id="placa" name="placa" required>
                 <option value="APT-1010">Placa: APT-1010</option>
                 <option value="APT-1011">Placa: APT-1011</option>
-            </input>
+            </select>
 
             <label for="motorista">Motorista:</label>
-            <input id="motorista" name="motorista" required>
+            <select id="motorista" name="motorista" required>
                 <option value="MOTORISTA01">MOTORISTA01</option>
                 <option value="MOTORISTA02">MOTORISTA02</option>
-            </input>
+            </select>
 
             <label for="quilometragem-saida">Quilometragem de Saída:</label>
             <input type="number" id="quilometragem-saida" name="quilometragem_saida" required>
