@@ -233,8 +233,20 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório de Veículos</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .top-right-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
 </head>
 <body>
+    <div class="top-right-button">
+        <form action="index.php" method="get">
+            <input type="submit" value="Voltar ao início">
+        </form>
+    </div>
     <div class="container">
         <h1>Relatório de Veículos</h1>
         <form action="relatorio.php" method="get">
@@ -306,9 +318,6 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
             $conn->close();
         }
         ?>
-        <form action="index.php" method="get">
-            <input type="submit" value="Voltar ao início">
-        </form>
     </div>
 </body>
 </html>
