@@ -39,8 +39,8 @@ CREATE TABLE entradas_saidas (
     FOREIGN KEY (veiculo_id) REFERENCES veiculos(id),
     FOREIGN KEY (motorista_id) REFERENCES motoristas(id)
 );
-INSERT INTO veiculos (placa) VALUES ('APT-1010'), ('APT-1011');
-INSERT INTO motoristas (nome) VALUES ('MOTORISTA01'), ('MOTORISTA02');
+INSERT INTO veiculos (placa) VALUES ('xxxxx'), ('xxxxy');
+INSERT INTO motoristas (nome) VALUES ('Alessandro'), ('Tiago'), ('Rodrigo'), ('Gabriel');
 EOF
 
 # Configurar Apache
@@ -76,14 +76,16 @@ cat <<EOT | sudo tee /var/www/html/veiculos/index.php
         <form id="registro-saida-form" action="registra_saida.php" method="post">
             <label for="placa">Placa do Veículo:</label>
             <select id="placa" name="placa" required>
-                <option value="APT-1010">Placa: APT-1010</option>
-                <option value="APT-1011">Placa: APT-1011</option>
+                <option value="xxxxx">Placa: xxxxx</option>
+                <option value="xxxxy">Placa: xxxxy</option>
             </select>
 
             <label for="motorista">Motorista:</label>
             <select id="motorista" name="motorista" required>
-                <option value="MOTORISTA01">MOTORISTA01</option>
-                <option value="MOTORISTA02">MOTORISTA02</option>
+                <option value="Alessandro">Alessandro</option>
+                <option value="Tiago">Tiago</option>
+                <option value="Rodrigo">Rodrigo</option>
+                <option value="Gabriel">Gabriel</option>
             </select>
 
             <label for="quilometragem-saida">Quilometragem de Saída:</label>
@@ -97,11 +99,11 @@ cat <<EOT | sudo tee /var/www/html/veiculos/index.php
 
             <input type="submit" value="Registrar Saída">
         </form>
-        <form action="registra_volta.html" method="get">
-            <input type="submit" value="Registrar Retorno">
-        </form>
         <form action="relatorio.php" method="get">
             <input type="submit" value="Gerar Relatório">
+        </form>
+        <form action="registra_volta.html" method="get">
+            <input type="submit" value="Registrar Retorno">
         </form>
     </div>
     <script src="scripts.js"></script>
@@ -168,8 +170,8 @@ cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.html
         <form id="registro-volta-form" action="registra_volta.php" method="post">
             <label for="placa">Placa do Veículo:</label>
             <select id="placa" name="placa" required>
-                <option value="APT-1010">Placa: APT-1010</option>
-                <option value="APT-1011">Placa: APT-1011</option>
+                <option value="xxxxx">Placa: xxxxx</option>
+                <option value="xxxxy">Placa: xxxxy</option>
             </select>
 
             <label for="quilometragem-volta">Quilometragem de Volta:</label>
@@ -179,9 +181,6 @@ cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.html
             <input type="datetime-local" id="data-hora-volta" name="data_hora_volta" required>
 
             <input type="submit" value="Registrar Volta">
-        </form>
-        <form action="index.php" method="get">
-            <input type="submit" value="Voltar ao inicio">
         </form>
     </div>
 </body>
@@ -233,20 +232,8 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório de Veículos</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .top-right-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-    </style>
 </head>
 <body>
-    <div class="top-right-button">
-        <form action="index.php" method="get">
-            <input type="submit" value="Voltar ao início">
-        </form>
-    </div>
     <div class="container">
         <h1>Relatório de Veículos</h1>
         <form action="relatorio.php" method="get">
@@ -259,30 +246,30 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
             <input type="submit" value="Gerar Relatório">
         </form>
         <?php
-        if (isset($_GET['data_inicio']) && isset($_GET['data_fim'])) {
-            $host = 'localhost';
-            $db = 'controle_veiculos';
-            $user = 'teste';
-            $pass = 'test@12345';
+        if (isset(\$_GET['data_inicio']) && isset(\$_GET['data_fim'])) {
+            \$host = 'localhost';
+            \$db = 'controle_veiculos';
+            \$user = 'teste';
+            \$pass = 'test@12345';
 
-            $conn = new mysqli($host, $user, $pass, $db);
+            \$conn = new mysqli(\$host, \$user, \$pass, \$db);
 
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
+            if (\$conn->connect_error) {
+                die("Connection failed: " . \$conn->connect_error);
             }
 
-            $data_inicio = $_GET['data_inicio'];
-            $data_fim = $_GET['data_fim'];
+            \$data_inicio = \$_GET['data_inicio'];
+            \$data_fim = \$_GET['data_fim'];
 
-            $sql = "SELECT v.placa, m.nome, e.quilometragem_saida, e.data_hora_saida, e.destino, e.quilometragem_volta, e.data_hora_volta
+            \$sql = "SELECT v.placa, m.nome, e.quilometragem_saida, e.data_hora_saida, e.destino, e.quilometragem_volta, e.data_hora_volta
                     FROM entradas_saidas e
                     JOIN veiculos v ON e.veiculo_id = v.id
                     JOIN motoristas m ON e.motorista_id = m.id
-                    WHERE e.data_hora_saida BETWEEN '$data_inicio' AND '$data_fim'";
+                    WHERE e.data_hora_saida BETWEEN '\$data_inicio' AND '\$data_fim'";
 
-            $result = $conn->query($sql);
+            \$result = \$conn->query(\$sql);
 
-            if ($result->num_rows > 0) {
+            if (\$result->num_rows > 0) {
                 echo "<table>
                         <tr>
                             <th>Placa</th>
@@ -293,29 +280,30 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
                             <th>Quilometragem Volta</th>
                             <th>Data Hora Volta</th>
                         </tr>";
-                while ($row = $result->fetch_assoc()) {
+                while (\$row = \$result->fetch_assoc()) {
                     echo "<tr>
-                            <td>" . htmlspecialchars($row['placa']) . "</td>
-                            <td>" . htmlspecialchars($row['nome']) . "</td>
-                            <td>" . htmlspecialchars($row['quilometragem_saida']) . "</td>
-                            <td>" . htmlspecialchars($row['data_hora_saida']) . "</td>
-                            <td>" . htmlspecialchars($row['destino']) . "</td>
-                            <td>" . htmlspecialchars($row['quilometragem_volta']) . "</td>
-                            <td>" . htmlspecialchars($row['data_hora_volta']) . "</td>
+                            <td>" . \$row['placa'] . "</td>
+                            <td>" . \$row['nome'] . "</td>
+                            <td>" . \$row['quilometragem_saida'] . "</td>
+                            <td>" . \$row['data_hora_saida'] . "</td>
+                            <td>" . \$row['destino'] . "</td>
+                            <td>" . \$row['quilometragem_volta'] . "</td>
+                            <td>" . \$row['data_hora_volta'] . "</td>
                         </tr>";
                 }
                 echo "</table>";
 
                 echo "<form action='download_relatorio.php' method='post'>
-                        <input type='hidden' name='data_inicio' value='$data_inicio'>
-                        <input type='hidden' name='data_fim' value='$data_fim'>
+                        <input type='hidden' name='data_inicio' value='\$data_inicio'>
+                        <input type='hidden' name='data_fim' value='\$data_fim'>
                         <input type='submit' value='Baixar Relatório'>
                       </form>";
+
             } else {
                 echo "<p>Nenhum registro encontrado para o período selecionado.</p>";
             }
 
-            $conn->close();
+            \$conn->close();
         }
         ?>
     </div>
@@ -372,30 +360,51 @@ EOT
 cat <<EOT | sudo tee /var/www/html/veiculos/styles.css
 body {
     font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #E0E0E0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
+
 .container {
     width: 50%;
     margin: auto;
     padding: 20px;
-    border: 1px solid #ccc;
+    background-color: #1E1E1E;
+    border: 1px solid #333;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
+
 h1 {
     text-align: center;
+    color: #FFFFFF;
 }
+
 form {
     display: flex;
     flex-direction: column;
 }
+
 label {
     margin-top: 10px;
+    color: #B0B0B0;
 }
+
 input, select {
     margin-bottom: 10px;
     padding: 10px;
     font-size: 16px;
+    background-color: #2A2A2A;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: #E0E0E0;
 }
+
 input[type="submit"] {
     background-color: #4CAF50;
     color: white;
@@ -403,22 +412,34 @@ input[type="submit"] {
     border-radius: 5px;
     cursor: pointer;
 }
+
 input[type="submit"]:hover {
     background-color: #45a049;
 }
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    background-color: #1E1E1E;
 }
+
 th, td {
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid #333;
     text-align: left;
 }
+
 th {
-    background-color: #f2f2f2;
+    background-color: #333;
+    color: #E0E0E0;
 }
+
+td {
+    background-color: #2A2A2A;
+    color: #E0E0E0;
+}
+
 EOT
 
 # Configuração final
@@ -426,5 +447,3 @@ sudo chown -R www-data:www-data /var/www/html/veiculos
 sudo chmod -R 755 /var/www/html/veiculos
 
 echo "Instalação e configuração concluídas. Acesse http://localhost/veiculos para utilizar o sistema."
-
-
