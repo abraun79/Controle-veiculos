@@ -247,30 +247,30 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
             <input type="submit" value="Gerar Relatório">
         </form>
         <?php
-        if (isset(\$_GET['data_inicio']) && isset(\$_GET['data_fim'])) {
-            \$host = 'localhost';
-            \$db = 'controle_veiculos';
-            \$user = 'teste';
-            \$pass = 'test@12345';
+        if (isset($_GET['data_inicio']) && isset($_GET['data_fim'])) {
+            $host = 'localhost';
+            $db = 'controle_veiculos';
+            $user = 'teste';
+            $pass = 'test@12345';
 
-            \$conn = new mysqli(\$host, \$user, \$pass, \$db);
+            $conn = new mysqli($host, $user, $pass, $db);
 
-            if (\$conn->connect_error) {
-                die("Connection failed: " . \$conn->connect_error);
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
             }
 
-            \$data_inicio = \$_GET['data_inicio'];
-            \$data_fim = \$_GET['data_fim'];
+            $data_inicio = $_GET['data_inicio'];
+            $data_fim = $_GET['data_fim'];
 
-            \$sql = "SELECT v.placa, m.nome, e.quilometragem_saida, e.data_hora_saida, e.destino, e.quilometragem_volta, e.data_hora_volta
+            $sql = "SELECT v.placa, m.nome, e.quilometragem_saida, e.data_hora_saida, e.destino, e.quilometragem_volta, e.data_hora_volta
                     FROM entradas_saidas e
                     JOIN veiculos v ON e.veiculo_id = v.id
                     JOIN motoristas m ON e.motorista_id = m.id
-                    WHERE e.data_hora_saida BETWEEN '\$data_inicio' AND '\$data_fim'";
+                    WHERE e.data_hora_saida BETWEEN '$data_inicio' AND '$data_fim'";
 
-            \$result = \$conn->query(\$sql);
+            $result = $conn->query($sql);
 
-            if (\$result->num_rows > 0) {
+            if ($result->num_rows > 0) {
                 echo "<table>
                         <tr>
                             <th>Placa</th>
@@ -281,15 +281,15 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
                             <th>Quilometragem Volta</th>
                             <th>Data Hora Volta</th>
                         </tr>";
-                while (\$row = \$result->fetch_assoc()) {
+                while ($row = $result->fetch_assoc()) {
                     echo "<tr>
-                            <td>" . \$row['placa'] . "</td>
-                            <td>" . \$row['nome'] . "</td>
-                            <td>" . \$row['quilometragem_saida'] . "</td>
-                            <td>" . \$row['data_hora_saida'] . "</td>
-                            <td>" . \$row['destino'] . "</td>
-                            <td>" . \$row['quilometragem_volta'] . "</td>
-                            <td>" . \$row['data_hora_volta'] . "</td>
+                            <td>" . $row['placa'] . "</td>
+                            <td>" . $row['nome'] . "</td>
+                            <td>" . $row['quilometragem_saida'] . "</td>
+                            <td>" . $row['data_hora_saida'] . "</td>
+                            <td>" . $row['destino'] . "</td>
+                            <td>" . $row['quilometragem_volta'] . "</td>
+                            <td>" . $row['data_hora_volta'] . "</td>
                         </tr>";
                 }
                 echo "</table>";
@@ -312,6 +312,7 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
     </div>
 </body>
 </html>
+
 EOT
 
 # Criar arquivo download_relatorio.php
