@@ -180,7 +180,7 @@ cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.html
 
             <input type="submit" value="Registrar Volta">
         </form>
-        <form action="index.html" method="get">
+        <form action="index.php" method="get">
             <input type="submit" value="Voltar ao inicio">
         </form>
     </div>
@@ -299,7 +299,7 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
                         <input type='hidden' name='data_fim' value='\$data_fim'>
                         <input type='submit' value='Baixar Relatório'>
                       </form>
-                      <form action="index.html" method="get">
+                      <form action="index.php" method="get">
                         <input type="submit" value="Voltar ao inicio">
                      </form>";
 
