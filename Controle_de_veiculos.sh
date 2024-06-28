@@ -39,8 +39,8 @@ CREATE TABLE entradas_saidas (
     FOREIGN KEY (veiculo_id) REFERENCES veiculos(id),
     FOREIGN KEY (motorista_id) REFERENCES motoristas(id)
 );
-INSERT INTO veiculos (placa) VALUES ('ATP-1010'), ('ATP-1011');
-INSERT INTO motoristas (nome) VALUES ('MOTORISTA01'), ('MOTORISTA02');
+INSERT INTO veiculos (placa) VALUES ('ATP-1010'), ('ATP-1011'), (ZTX-3245);
+INSERT INTO motoristas (nome) VALUES ('MOTORISTA01'), ('MOTORISTA02'), (MOTORISTA03), (MOTORISTA04);
 EOF
 
 # Configurar Apache
@@ -78,12 +78,15 @@ cat <<EOT | sudo tee /var/www/html/veiculos/index.php
             <select id="placa" name="placa" required>
                 <option value="ATP-1010">ATP-1010</option>
                 <option value="ATP-1011">ATP-1011</option>
+                <option value="ZTX-3245">ZTX-3245</option>
             </select>
 
             <label for="motorista">Motorista:</label>
             <select id="motorista" name="motorista" required>
                 <option value="MOTORISTA01">MOTORISTA01</option>
                 <option value="MOTORISTA02">MOTORISTA02</option>
+                <option value="MOTORISTA03">MOTORISTA03</option>
+                <option value="MOTORISTA04">MOTORISTA04</option>
             </select>
 
             <label for="quilometragem-saida">Quilometragem de Saída:</label>
@@ -111,45 +114,68 @@ EOT
 
 # Criar arquivo registra_saida.php
 cat <<EOT | sudo tee /var/www/html/veiculos/registra_saida.php
-<?php
-\$host = 'localhost';
-\$db = 'controle_veiculos';
-\$user = 'teste';
-\$pass = 'test@12345';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Saída</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Registrar Saída de Veículo</h1>
+        <a href="index.php" class="back-button">Voltar ao início</a>
+        <?php
+        $host = 'localhost';
+        $db = 'controle_veiculos';
+        $user = 'teste';
+        $pass = 'test@12345';
 
-\$conn = new mysqli(\$host, \$user, \$pass, \$db);
+        $conn = new mysqli($host, $user, $pass, $db);
 
-if (\$conn->connect_error) {
-    die("Connection failed: " . \$conn->connect_error);
-}
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
 
-\$placa = \$_POST['placa'];
-\$motorista = \$_POST['motorista'];
-\$quilometragem_saida = \$_POST['quilometragem_saida'];
-\$destino = \$_POST['destino'];
-\$data_hora_saida = \$_POST['data_hora_saida'];
+        $placa = $_POST['placa'];
+        $motorista = $_POST['motorista'];
+        $quilometragem_saida = $_POST['quilometragem_saida'];
+        $data_hora_saida = $_POST['data_hora_saida'];
+        $destino = $_POST['destino'];
 
-\$motorista_id_query = "SELECT id FROM motoristas WHERE nome='\$motorista'";
-\$motorista_id_result = \$conn->query(\$motorista_id_query);
-\$motorista_id_row = \$motorista_id_result->fetch_assoc();
-\$motorista_id = \$motorista_id_row['id'];
+        $motorista_id_query = "SELECT id FROM motoristas WHERE nome='$motorista'";
+        $motorista_id_result = $conn->query($motorista_id_query);
+        if ($motorista_id_result->num_rows > 0) {
+            $motorista_id_row = $motorista_id_result->fetch_assoc();
+            $motorista_id = $motorista_id_row['id'];
 
-\$veiculo_id_query = "SELECT id FROM veiculos WHERE placa='\$placa'";
-\$veiculo_id_result = \$conn->query(\$veiculo_id_query);
-\$veiculo_id_row = \$veiculo_id_result->fetch_assoc();
-\$veiculo_id = \$veiculo_id_row['id'];
+            $veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
+            $veiculo_id_result = $conn->query($veiculo_id_query);
+            if ($veiculo_id_result->num_rows > 0) {
+                $veiculo_id_row = $veiculo_id_result->fetch_assoc();
+                $veiculo_id = $veiculo_id_row['id'];
 
-\$sql = "INSERT INTO entradas_saidas (veiculo_id, motorista_id, quilometragem_saida, data_hora_saida, destino) 
-        VALUES ('\$veiculo_id', '\$motorista_id', '\$quilometragem_saida', '\$data_hora_saida', '\$destino')";
+                $sql = "INSERT INTO entradas_saidas (veiculo_id, motorista_id, quilometragem_saida, data_hora_saida, destino) 
+                        VALUES ('$veiculo_id', '$motorista_id', '$quilometragem_saida', '$data_hora_saida', '$destino')";
 
-if (\$conn->query(\$sql) === TRUE) {
-    echo json_encode(['status' => 'success']);
-} else {
-    echo json_encode(['status' => 'error', 'message' => \$conn->error]);
-}
+                if ($conn->query($sql) === TRUE) {
+                    echo "<p class='success-message'>Registrado com sucesso!</p>";
+                } else {
+                    echo "<p class='error-message'>Falha de registro: " . $conn->error . "</p>";
+                }
+            } else {
+                echo "<p class='error-message'>Veículo não encontrado.</p>";
+            }
+        } else {
+            echo "<p class='error-message'>Motorista não encontrado.</p>";
+        }
 
-\$conn->close();
-?>
+        $conn->close();
+        ?>
+    </div>
+</body>
+</html>
 EOT
 
 # Criar arquivo registra_volta.html
@@ -199,38 +225,58 @@ EOT
 
 # Criar arquivo registra_volta.php
 cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.php
-<?php
-\$host = 'localhost';
-\$db = 'controle_veiculos';
-\$user = 'teste';
-\$pass = 'test@12345';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Retorno</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Registrar Retorno de Veículo</h1>
+        <a href="index.php" class="back-button">Voltar ao início</a>
+        <?php
+        $host = 'localhost';
+        $db = 'controle_veiculos';
+        $user = 'teste';
+        $pass = 'test@12345';
 
-\$conn = new mysqli(\$host, \$user, \$pass, \$db);
+        $conn = new mysqli($host, $user, $pass, $db);
 
-if (\$conn->connect_error) {
-    die("Connection failed: " . \$conn->connect_error);
-}
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
 
-\$placa = \$_POST['placa'];
-\$quilometragem_volta = \$_POST['quilometragem_volta'];
-\$data_hora_volta = \$_POST['data_hora_volta'];
+        $placa = $_POST['placa'];
+        $quilometragem_volta = $_POST['quilometragem_volta'];
+        $data_hora_volta = $_POST['data_hora_volta'];
 
-\$veiculo_id_query = "SELECT id FROM veiculos WHERE placa='\$placa'";
-\$veiculo_id_result = \$conn->query(\$veiculo_id_query);
-\$veiculo_id_row = \$veiculo_id_result->fetch_assoc();
-\$veiculo_id = \$veiculo_id_row['id'];
+        $veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
+        $veiculo_id_result = $conn->query($veiculo_id_query);
+        if ($veiculo_id_result->num_rows > 0) {
+            $veiculo_id_row = $veiculo_id_result->fetch_assoc();
+            $veiculo_id = $veiculo_id_row['id'];
 
-\$sql = "UPDATE entradas_saidas SET quilometragem_volta='\$quilometragem_volta', data_hora_volta='\$data_hora_volta' 
-        WHERE veiculo_id='\$veiculo_id' AND quilometragem_volta IS NULL";
+            $sql = "UPDATE entradas_saidas 
+                    SET quilometragem_volta='$quilometragem_volta', data_hora_volta='$data_hora_volta' 
+                    WHERE veiculo_id='$veiculo_id' AND quilometragem_volta IS NULL AND data_hora_volta IS NULL";
 
-if (\$conn->query(\$sql) === TRUE) {
-    echo json_encode(['status' => 'success']);
-} else {
-    echo json_encode(['status' => 'error', 'message' => \$conn->error]);
-}
+            if ($conn->query($sql) === TRUE) {
+                echo "<p class='success-message'>Registrado com sucesso!</p>";
+            } else {
+                echo "<p class='error-message'>Falha de registro: " . $conn->error . "</p>";
+            }
+        } else {
+            echo "<p class='error-message'>Veículo não encontrado.</p>";
+        }
 
-\$conn->close();
-?>
+        $conn->close();
+        ?>
+    </div>
+</body>
+</html>
 EOT
 
 # Criar arquivo relatorio.php
@@ -354,6 +400,7 @@ body {
     border: 1px solid #333;
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    position: relative;
 }
 
 h1 {
@@ -416,6 +463,33 @@ td {
     color: #E0E0E0;
 }
 
+.back-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.back-button:hover {
+    background-color: #45a049;
+}
+
+.success-message {
+    color: #4CAF50;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.error-message {
+    color: #F44336;
+    text-align: center;
+    margin-top: 20px;
+}
 EOT
 
 # Configuração final
