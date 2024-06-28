@@ -295,21 +295,20 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
                 echo "</table>";
 
                 echo "<form action='download_relatorio.php' method='post'>
-                        <input type='hidden' name='data_inicio' value='\$data_inicio'>
-                        <input type='hidden' name='data_fim' value='\$data_fim'>
+                        <input type='hidden' name='data_inicio' value='$data_inicio'>
+                        <input type='hidden' name='data_fim' value='$data_fim'>
                         <input type='submit' value='Baixar Relatório'>
-                      </form>
-                      <form action="index.php" method="get">
-                        <input type="submit" value="Voltar ao inicio">
-                     </form>";
-
+                      </form>";
             } else {
                 echo "<p>Nenhum registro encontrado para o período selecionado.</p>";
             }
 
-            \$conn->close();
+            $conn->close();
         }
         ?>
+        <form action="index.php" method="get">
+            <input type="submit" value="Voltar ao início">
+        </form>
     </div>
 </body>
 </html>
