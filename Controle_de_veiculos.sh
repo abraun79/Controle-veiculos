@@ -39,8 +39,8 @@ CREATE TABLE entradas_saidas (
     FOREIGN KEY (veiculo_id) REFERENCES veiculos(id),
     FOREIGN KEY (motorista_id) REFERENCES motoristas(id)
 );
-INSERT INTO veiculos (placa) VALUES ('xxxxx'), ('xxxxy');
-INSERT INTO motoristas (nome) VALUES ('Alessandro'), ('Tiago'), ('Rodrigo'), ('Gabriel');
+INSERT INTO veiculos (placa) VALUES ('ATP-1010'), ('ATP-1011');
+INSERT INTO motoristas (nome) VALUES ('MOTORISTA01'), ('MOTORISTA02');
 EOF
 
 # Configurar Apache
@@ -76,16 +76,14 @@ cat <<EOT | sudo tee /var/www/html/veiculos/index.php
         <form id="registro-saida-form" action="registra_saida.php" method="post">
             <label for="placa">Placa do Veículo:</label>
             <select id="placa" name="placa" required>
-                <option value="xxxxx">Placa: xxxxx</option>
-                <option value="xxxxy">Placa: xxxxy</option>
+                <option value="ATP-1010">ATP-1010</option>
+                <option value="ATP-1011">ATP-1011</option>
             </select>
 
             <label for="motorista">Motorista:</label>
             <select id="motorista" name="motorista" required>
-                <option value="Alessandro">Alessandro</option>
-                <option value="Tiago">Tiago</option>
-                <option value="Rodrigo">Rodrigo</option>
-                <option value="Gabriel">Gabriel</option>
+                <option value="MOTORISTA01">MOTORISTA01</option>
+                <option value="MOTORISTA02">MOTORISTA02</option>
             </select>
 
             <label for="quilometragem-saida">Quilometragem de Saída:</label>
@@ -99,11 +97,11 @@ cat <<EOT | sudo tee /var/www/html/veiculos/index.php
 
             <input type="submit" value="Registrar Saída">
         </form>
-        <form action="relatorio.php" method="get">
-            <input type="submit" value="Gerar Relatório">
-        </form>
         <form action="registra_volta.html" method="get">
             <input type="submit" value="Registrar Retorno">
+        </form>
+        <form action="relatorio.php" method="get">
+            <input type="submit" value="Gerar Relatório">
         </form>
     </div>
     <script src="scripts.js"></script>
@@ -114,6 +112,23 @@ EOT
 # Criar arquivo registra_saida.php
 cat <<EOT | sudo tee /var/www/html/veiculos/registra_saida.php
 <?php
+// Código de registro
+echo "<h1>Registrado com sucesso</h1>";
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Saída de Veículos</title>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <title>Registrar Volta</title>
+</head>
+<body>
+    <a href="index.php"><button>Voltar ao Início</button></a>
+</body>
+</html>
 \$host = 'localhost';
 \$db = 'controle_veiculos';
 \$user = 'teste';
@@ -163,15 +178,26 @@ cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.html
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Volta de Veículo</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .top-right-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
 </head>
 <body>
+    <div class="top-right-button">
+        <form action="index.php" method="get">
+            <input type="submit" value="Voltar ao início">
+        </form>
     <div class="container">
         <h1>Registrar Volta de Veículo</h1>
         <form id="registro-volta-form" action="registra_volta.php" method="post">
             <label for="placa">Placa do Veículo:</label>
             <select id="placa" name="placa" required>
-                <option value="xxxxx">Placa: xxxxx</option>
-                <option value="xxxxy">Placa: xxxxy</option>
+                <option value="ATP-1010">ATP-1010</option>
+                <option value="ATP-1011">ATP-1011</option>
             </select>
 
             <label for="quilometragem-volta">Quilometragem de Volta:</label>
@@ -190,6 +216,23 @@ EOT
 # Criar arquivo registra_volta.php
 cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.php
 <?php
+// Código de registro
+echo "<h1>Registrado com sucesso</h1>";
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Saída de Veículos</title>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <title>Registrar Volta</title>
+</head>
+<body>
+    <a href="index.php"><button>Voltar ao Início</button></a>
+</body>
+</html>
 \$host = 'localhost';
 \$db = 'controle_veiculos';
 \$user = 'teste';
@@ -232,8 +275,19 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório de Veículos</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .top-right-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
 </head>
 <body>
+    <div class="top-right-button">
+        <form action="index.php" method="get">
+            <input type="submit" value="Voltar ao início">
+        </form>
     <div class="container">
         <h1>Relatório de Veículos</h1>
         <form action="relatorio.php" method="get">
