@@ -178,51 +178,6 @@ cat <<EOT | sudo tee /var/www/html/veiculos/registra_saida.php
 </html>
 EOT
 
-# Criar arquivo registra_volta.html
-cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de retorno</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        .top-right-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="top-right-button">
-        <form action="index.php" method="get">
-            <input type="submit" value="Voltar ao início">
-        </form>
-    </div>
-    <div class="container">
-        <h1>Registrar Volta de Veículo</h1>
-        <form id="registro-volta-form" action="registra_volta.php" method="post">
-            <label for="placa">Placa do Veículo:</label>
-            <select id="placa" name="placa" required>
-                <option value="ATP-1010">ATP-1010</option>
-                <option value="ATP-1011">ATP-1010</option>
-            </select>
-
-            <label for="quilometragem-volta">Quilometragem de Volta:</label>
-            <input type="number" id="quilometragem-volta" name="quilometragem_volta" required>
-
-            <label for="data-hora-volta">Data e Hora de Volta:</label>
-            <input type="datetime-local" id="data-hora-volta" name="data_hora_volta" required>
-
-            <input type="submit" value="Registrar Volta">
-        </form>
-    </div>
-</body>
-</html>
-EOT
-
 # Criar arquivo registra_volta.php
 cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.php
 <!DOCTYPE html>
@@ -230,50 +185,81 @@ cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.php
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Retorno</title>
+    <title>Registro de Volta</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Registrar Retorno de Veículo</h1>
-        <a href="index.php" class="back-button">Voltar ao início</a>
+        <h1>Registro de Volta</h1>
+        <form action="" method="post">
+            <label for="placa">Placa do Veículo:</label>
+            <select id="placa" name="placa" required>
+                <option value="APT-1010">APT-1010</option>
+                <option value="APT-1011">APT-1011</option>
+		        <option value="ZTX-3245">ZTX-3245</option>
+            </select>
+
+            <label for="motorista">Motorista:</label>
+            <select id="motorista" name="motorista" required>
+                <option value="MOTORISTA01">MOTORISTA01</option>
+                <option value="MOTORISTA02">MOTORISTA02</option>
+		        <option value="MOTORISTA03">MOTORISTA03</option>
+		        <option value="MOTORISTA04">MOTORISTA04</option>
+            </select>
+
+            <label for="quilometragem_volta">Quilometragem de Volta:</label>
+            <input type="number" id="quilometragem_volta" name="quilometragem_volta" required>
+
+            <label for="data_hora_volta">Data e Hora de Volta:</label>
+            <input type="datetime-local" id="data_hora_volta" name="data_hora_volta" required>
+
+            <input type="submit" value="Registrar Volta">
+        </form>
+
         <?php
-        $host = 'localhost';
-        $db = 'controle_veiculos';
-        $user = 'teste';
-        $pass = 'test@12345';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $host = 'localhost';
+            $db = 'controle_veiculos';
+            $user = 'teste';
+            $pass = 'test@12345';
 
-        $conn = new mysqli($host, $user, $pass, $db);
+            $conn = new mysqli($host, $user, $pass, $db);
 
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
 
-        $placa = $_POST['placa'];
-        $quilometragem_volta = $_POST['quilometragem_volta'];
-        $data_hora_volta = $_POST['data_hora_volta'];
+            $placa = $_POST['placa'];
+            $motorista = $_POST['motorista'];
+            $quilometragem_volta = $_POST['quilometragem_volta'];
+            $data_hora_volta = $_POST['data_hora_volta'];
 
-        $veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
-        $veiculo_id_result = $conn->query($veiculo_id_query);
-        if ($veiculo_id_result->num_rows > 0) {
+            $motorista_id_query = "SELECT id FROM motoristas WHERE nome='$motorista'";
+            $motorista_id_result = $conn->query($motorista_id_query);
+            $motorista_id_row = $motorista_id_result->fetch_assoc();
+            $motorista_id = $motorista_id_row['id'];
+
+            $veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
+            $veiculo_id_result = $conn->query($veiculo_id_query);
             $veiculo_id_row = $veiculo_id_result->fetch_assoc();
             $veiculo_id = $veiculo_id_row['id'];
 
             $sql = "UPDATE entradas_saidas 
-                    SET quilometragem_volta='$quilometragem_volta', data_hora_volta='$data_hora_volta' 
-                    WHERE veiculo_id='$veiculo_id' AND quilometragem_volta IS NULL AND data_hora_volta IS NULL";
+                    SET quilometragem_volta='$quilometragem_volta', data_hora_volta='$data_hora_volta'
+                    WHERE veiculo_id='$veiculo_id' AND motorista_id='$motorista_id' AND quilometragem_volta IS NULL";
 
             if ($conn->query($sql) === TRUE) {
-                echo "<p class='success-message'>Registrado com sucesso!</p>";
+                echo "<p class='success'>Registrado com sucesso</p>";
             } else {
-                echo "<p class='error-message'>Falha de registro: " . $conn->error . "</p>";
+                echo "<p class='error'>Falha de registro: " . $conn->error . "</p>";
             }
-        } else {
-            echo "<p class='error-message'>Veículo não encontrado.</p>";
-        }
 
-        $conn->close();
+            $conn->close();
+        }
         ?>
+        <form action="index.php" method="get" style="position: absolute; top: 10px; right: 10px;">
+            <input type="submit" value="Voltar ao início">
+        </form>
     </div>
 </body>
 </html>
