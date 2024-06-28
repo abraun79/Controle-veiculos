@@ -97,11 +97,11 @@ cat <<EOT | sudo tee /var/www/html/veiculos/index.php
 
             <input type="submit" value="Registrar Saída">
         </form>
-        <form action="relatorio.php" method="get">
-            <input type="submit" value="Gerar Relatório">
-        </form>
         <form action="registra_volta.html" method="get">
             <input type="submit" value="Registrar Retorno">
+        </form>
+        <form action="relatorio.php" method="get">
+            <input type="submit" value="Gerar Relatório">
         </form>
     </div>
     <script src="scripts.js"></script>
@@ -179,6 +179,9 @@ cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.html
             <input type="datetime-local" id="data-hora-volta" name="data_hora_volta" required>
 
             <input type="submit" value="Registrar Volta">
+        </form>
+        <form action="index.html" method="get">
+            <input type="submit" value="Voltar ao inicio">
         </form>
     </div>
 </body>
@@ -295,7 +298,10 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
                         <input type='hidden' name='data_inicio' value='\$data_inicio'>
                         <input type='hidden' name='data_fim' value='\$data_fim'>
                         <input type='submit' value='Baixar Relatório'>
-                      </form>";
+                      </form>
+                      <form action="index.html" method="get">
+                        <input type="submit" value="Voltar ao inicio">
+                     </form>";
 
             } else {
                 echo "<p>Nenhum registro encontrado para o período selecionado.</p>";
