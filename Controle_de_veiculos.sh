@@ -283,13 +283,13 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
                         </tr>";
                 while ($row = $result->fetch_assoc()) {
                     echo "<tr>
-                            <td>" . $row['placa'] . "</td>
-                            <td>" . $row['nome'] . "</td>
-                            <td>" . $row['quilometragem_saida'] . "</td>
-                            <td>" . $row['data_hora_saida'] . "</td>
-                            <td>" . $row['destino'] . "</td>
-                            <td>" . $row['quilometragem_volta'] . "</td>
-                            <td>" . $row['data_hora_volta'] . "</td>
+                            <td>" . htmlspecialchars($row['placa']) . "</td>
+                            <td>" . htmlspecialchars($row['nome']) . "</td>
+                            <td>" . htmlspecialchars($row['quilometragem_saida']) . "</td>
+                            <td>" . htmlspecialchars($row['data_hora_saida']) . "</td>
+                            <td>" . htmlspecialchars($row['destino']) . "</td>
+                            <td>" . htmlspecialchars($row['quilometragem_volta']) . "</td>
+                            <td>" . htmlspecialchars($row['data_hora_volta']) . "</td>
                         </tr>";
                 }
                 echo "</table>";
@@ -312,7 +312,6 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
     </div>
 </body>
 </html>
-
 EOT
 
 # Criar arquivo download_relatorio.php
