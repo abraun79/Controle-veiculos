@@ -112,23 +112,6 @@ EOT
 # Criar arquivo registra_saida.php
 cat <<EOT | sudo tee /var/www/html/veiculos/registra_saida.php
 <?php
-// Código de registro
-echo "<h1>Registrado com sucesso</h1>";
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Saída de Veículos</title>
-    <link rel="stylesheet" href="styles.css">
-    <meta charset="UTF-8">
-    <title>Registrar Volta</title>
-</head>
-<body>
-    <a href="index.php"><button>Voltar ao Início</button></a>
-</body>
-</html>
 \$host = 'localhost';
 \$db = 'controle_veiculos';
 \$user = 'teste';
@@ -176,7 +159,7 @@ cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Volta de Veículo</title>
+    <title>Registro de retorno</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         .top-right-button {
@@ -191,13 +174,14 @@ cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.html
         <form action="index.php" method="get">
             <input type="submit" value="Voltar ao início">
         </form>
+    </div>
     <div class="container">
         <h1>Registrar Volta de Veículo</h1>
         <form id="registro-volta-form" action="registra_volta.php" method="post">
             <label for="placa">Placa do Veículo:</label>
             <select id="placa" name="placa" required>
                 <option value="ATP-1010">ATP-1010</option>
-                <option value="ATP-1011">ATP-1011</option>
+                <option value="ATP-1011">ATP-1010</option>
             </select>
 
             <label for="quilometragem-volta">Quilometragem de Volta:</label>
@@ -216,23 +200,6 @@ EOT
 # Criar arquivo registra_volta.php
 cat <<EOT | sudo tee /var/www/html/veiculos/registra_volta.php
 <?php
-// Código de registro
-echo "<h1>Registrado com sucesso</h1>";
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Saída de Veículos</title>
-    <link rel="stylesheet" href="styles.css">
-    <meta charset="UTF-8">
-    <title>Registrar Volta</title>
-</head>
-<body>
-    <a href="index.php"><button>Voltar ao Início</button></a>
-</body>
-</html>
 \$host = 'localhost';
 \$db = 'controle_veiculos';
 \$user = 'teste';
@@ -288,6 +255,7 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
         <form action="index.php" method="get">
             <input type="submit" value="Voltar ao início">
         </form>
+    </div>
     <div class="container">
         <h1>Relatório de Veículos</h1>
         <form action="relatorio.php" method="get">
@@ -300,30 +268,30 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
             <input type="submit" value="Gerar Relatório">
         </form>
         <?php
-        if (isset(\$_GET['data_inicio']) && isset(\$_GET['data_fim'])) {
-            \$host = 'localhost';
-            \$db = 'controle_veiculos';
-            \$user = 'teste';
-            \$pass = 'test@12345';
+        if (isset($_GET['data_inicio']) && isset($_GET['data_fim'])) {
+            $host = 'localhost';
+            $db = 'controle_veiculos';
+            $user = 'teste';
+            $pass = 'test@12345';
 
-            \$conn = new mysqli(\$host, \$user, \$pass, \$db);
+            $conn = new mysqli($host, $user, $pass, $db);
 
-            if (\$conn->connect_error) {
-                die("Connection failed: " . \$conn->connect_error);
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
             }
 
-            \$data_inicio = \$_GET['data_inicio'];
-            \$data_fim = \$_GET['data_fim'];
+            $data_inicio = $_GET['data_inicio'];
+            $data_fim = $_GET['data_fim'];
 
-            \$sql = "SELECT v.placa, m.nome, e.quilometragem_saida, e.data_hora_saida, e.destino, e.quilometragem_volta, e.data_hora_volta
+            $sql = "SELECT v.placa, m.nome, e.quilometragem_saida, e.data_hora_saida, e.destino, e.quilometragem_volta, e.data_hora_volta
                     FROM entradas_saidas e
                     JOIN veiculos v ON e.veiculo_id = v.id
                     JOIN motoristas m ON e.motorista_id = m.id
-                    WHERE e.data_hora_saida BETWEEN '\$data_inicio' AND '\$data_fim'";
+                    WHERE e.data_hora_saida BETWEEN '$data_inicio' AND '$data_fim'";
 
-            \$result = \$conn->query(\$sql);
+            $result = $conn->query($sql);
 
-            if (\$result->num_rows > 0) {
+            if ($result->num_rows > 0) {
                 echo "<table>
                         <tr>
                             <th>Placa</th>
@@ -334,80 +302,34 @@ cat <<EOT | sudo tee /var/www/html/veiculos/relatorio.php
                             <th>Quilometragem Volta</th>
                             <th>Data Hora Volta</th>
                         </tr>";
-                while (\$row = \$result->fetch_assoc()) {
+                while ($row = $result->fetch_assoc()) {
                     echo "<tr>
-                            <td>" . \$row['placa'] . "</td>
-                            <td>" . \$row['nome'] . "</td>
-                            <td>" . \$row['quilometragem_saida'] . "</td>
-                            <td>" . \$row['data_hora_saida'] . "</td>
-                            <td>" . \$row['destino'] . "</td>
-                            <td>" . \$row['quilometragem_volta'] . "</td>
-                            <td>" . \$row['data_hora_volta'] . "</td>
+                            <td>" . htmlspecialchars($row['placa']) . "</td>
+                            <td>" . htmlspecialchars($row['nome']) . "</td>
+                            <td>" . htmlspecialchars($row['quilometragem_saida']) . "</td>
+                            <td>" . htmlspecialchars($row['data_hora_saida']) . "</td>
+                            <td>" . htmlspecialchars($row['destino']) . "</td>
+                            <td>" . htmlspecialchars($row['quilometragem_volta']) . "</td>
+                            <td>" . htmlspecialchars($row['data_hora_volta']) . "</td>
                         </tr>";
                 }
                 echo "</table>";
 
                 echo "<form action='download_relatorio.php' method='post'>
-                        <input type='hidden' name='data_inicio' value='\$data_inicio'>
-                        <input type='hidden' name='data_fim' value='\$data_fim'>
+                        <input type='hidden' name='data_inicio' value='$data_inicio'>
+                        <input type='hidden' name='data_fim' value='$data_fim'>
                         <input type='submit' value='Baixar Relatório'>
                       </form>";
-
             } else {
                 echo "<p>Nenhum registro encontrado para o período selecionado.</p>";
             }
 
-            \$conn->close();
+            $conn->close();
         }
         ?>
     </div>
 </body>
 </html>
-EOT
-
-# Criar arquivo download_relatorio.php
-cat <<EOT | sudo tee /var/www/html/veiculos/download_relatorio.php
-<?php
-if (\$_SERVER["REQUEST_METHOD"] == "POST" && isset(\$_POST['data_inicio']) && isset(\$_POST['data_fim'])) {
-    \$host = 'localhost';
-    \$db = 'controle_veiculos';
-    \$user = 'teste';
-    \$pass = 'test@12345';
-
-    \$conn = new mysqli(\$host, \$user, \$pass, \$db);
-
-    if (\$conn->connect_error) {
-        die("Connection failed: " . \$conn->connect_error);
-    }
-
-    \$data_inicio = \$_POST['data_inicio'];
-    \$data_fim = \$_POST['data_fim'];
-
-    \$sql = "SELECT v.placa, m.nome, e.quilometragem_saida, e.data_hora_saida, e.destino, e.quilometragem_volta, e.data_hora_volta
-            FROM entradas_saidas e
-            JOIN veiculos v ON e.veiculo_id = v.id
-            JOIN motoristas m ON e.motorista_id = m.id
-            WHERE e.data_hora_saida BETWEEN '\$data_inicio' AND '\$data_fim'";
-
-    \$result = \$conn->query(\$sql);
-
-    if (\$result->num_rows > 0) {
-        \$file_content = "Placa\\tMotorista\\tQuilometragem Saída\\tData Hora Saída\\tDestino\\tQuilometragem Volta\\tData Hora Volta\\n";
-        while (\$row = \$result->fetch_assoc()) {
-            \$file_content .= \$row['placa'] . "\\t" . \$row['nome'] . "\\t" . \$row['quilometragem_saida'] . "\\t" . \$row['data_hora_saida'] . "\\t" . \$row['destino'] . "\\t" . \$row['quilometragem_volta'] . "\\t" . \$row['data_hora_volta'] . "\\n";
-        }
-
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="relatorio.txt"');
-        header('Content-Length: ' . strlen(\$file_content));
-        echo \$file_content;
-    } else {
-        echo "<p>Nenhum registro encontrado para o período selecionado.</p>";
-    }
-
-    \$conn->close();
-}
-?>
 EOT
 
 # Criar arquivo styles.css
