@@ -1,4 +1,4 @@
-#!/bin/bash~
+#!/bin/bash
 
 # Atualiza o sistema e instala o Apache, MySQL e PHP
 sudo apt update
