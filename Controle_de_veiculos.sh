@@ -620,6 +620,10 @@ th {
 }
 EOF
 
+# Configuração final
+sudo chown -R www-data:www-data /var/www/html/veiculos
+sudo chmod -R 755 /var/www/html/veiculos
+
 # Reinicia o Apache para aplicar as mudanças
 sudo systemctl restart apache2
 
