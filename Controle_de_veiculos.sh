@@ -54,111 +54,125 @@ INSERT IGNORE INTO motoristas (nome) VALUES
 ('MOTORISTA04');
 EOF
 
-# Cria o arquivo PHP para registrar saída
-sudo tee /var/www/html/registra_saida.php << 'EOF'
+# Cria diretórios e arquivos do projeto
+sudo mkdir -p /var/www/html/veiculos
+cd /var/www/html/veiculos
+
+sudo tee index.php << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Saída</title>
+    <title>Controle de Saída de Veículos</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Registrar Saída</h1>
-        <form action="registra_saida.php" method="post">
+        <h1>Controle de Saída de Veículos</h1>
+        <form id="registro-saida-form" action="registra_saida.php" method="post">
             <label for="placa">Placa do Veículo:</label>
             <select id="placa" name="placa" required>
                 <option value="">Selecione a Placa</option>
                 <?php
-                $conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-                $result = $conn->query("SELECT placa FROM veiculos");
-                while ($row = $result->fetch_assoc()) {
-                    echo "<option value='{$row['placa']}'>{$row['placa']}</option>";
+                \$conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
+                \$result = \$conn->query("SELECT placa FROM veiculos");
+                while (\$row = \$result->fetch_assoc()) {
+                    echo "<option value='\$row[placa]'>\$row[placa]</option>";
                 }
-                $conn->close();
+                \$conn->close();
                 ?>
             </select>
 
-            <label for="motorista">Nome do Motorista:</label>
+            <label for="motorista">Motorista:</label>
             <select id="motorista" name="motorista" required>
                 <option value="">Selecione o Motorista</option>
                 <?php
-                $conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-                $result = $conn->query("SELECT nome FROM motoristas");
-                while ($row = $result->fetch_assoc()) {
-                    echo "<option value='{$row['nome']}'>{$row['nome']}</option>";
+                \$conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
+                \$result = \$conn->query("SELECT nome FROM motoristas");
+                while (\$row = \$result->fetch_assoc()) {
+                    echo "<option value='\$row[nome]'>\$row[nome]</option>";
                 }
-                $conn->close();
+                \$conn->close();
                 ?>
             </select>
 
-            <label for="quilometragem_saida">Quilometragem de Saída:</label>
-            <input type="number" id="quilometragem_saida" name="quilometragem_saida" required>
-
-            <label for="data_hora_saida">Data e Hora de Saída:</label>
-            <input type="datetime-local" id="data_hora_saida" name="data_hora_saida" required>
+            <label for="quilometragem-saida">Quilometragem de Saída:</label>
+            <input type="number" id="quilometragem-saida" name="quilometragem_saida" required>
 
             <label for="destino">Destino:</label>
             <input type="text" id="destino" name="destino" required>
 
+            <label for="data-hora-saida">Data e Hora de Saída:</label>
+            <input type="datetime-local" id="data-hora-saida" name="data_hora_saida" required>
+
             <input type="submit" value="Registrar Saída">
         </form>
-        <form action="index.php" method="get" style="position: absolute; top: 20px; right: 20px;">
-            <input type="submit" value="Voltar ao início">
+        <form action="relatorio.php" method="get" style="position: absolute; top: 20px; right: 20px;">
+            <input type="submit" value="Relatório">
         </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $host = 'localhost';
-            $db = 'controle_veiculos';
-            $user = 'teste';
-            $pass = 'test@12345';
-
-            $conn = new mysqli($host, $user, $pass, $db);
-
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
-            }
-
-            $placa = $_POST['placa'];
-            $motorista = $_POST['motorista'];
-            $quilometragem_saida = $_POST['quilometragem_saida'];
-            $data_hora_saida = $_POST['data_hora_saida'];
-            $destino = $_POST['destino'];
-
-            $veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
-            $veiculo_id_result = $conn->query($veiculo_id_query);
-            $veiculo_id_row = $veiculo_id_result->fetch_assoc();
-            $veiculo_id = $veiculo_id_row['id'];
-
-            $motorista_id_query = "SELECT id FROM motoristas WHERE nome='$motorista'";
-            $motorista_id_result = $conn->query($motorista_id_query);
-            $motorista_id_row = $motorista_id_result->fetch_assoc();
-            $motorista_id = $motorista_id_row['id'];
-
-            $sql_check = "SELECT * FROM entradas_saidas WHERE veiculo_id='$veiculo_id' AND data_hora_volta IS NULL";
-            $result_check = $conn->query($sql_check);
-
-            if ($result_check->num_rows > 0) {
-                echo "<script>alert('Este veículo já está em uso.');</script>";
-            } else {
-                $sql = "INSERT INTO entradas_saidas (veiculo_id, motorista_id, quilometragem_saida, data_hora_saida, destino) 
-                        VALUES ('$veiculo_id', '$motorista_id', '$quilometragem_saida', '$data_hora_saida', '$destino')";
-
-                if ($conn->query($sql) === TRUE) {
-                    echo "<script>alert('Registro de saída bem-sucedido!');</script>";
-                } else {
-                    echo "<script>alert('Erro ao registrar saída: " . $conn->error . "');</script>";
-                }
-            }
-
-            $conn->close();
-        }
-        ?>
+        <form action="configuracao.php" method="get" style="position: absolute; top: 20px; right: 20px;">
+            <input type="submit" value="Configuração">
+        </form>    
+        </form><form action="registra_volta.php" method="get" style="position: absolute; top: 20px; right: 20px;">
+            <input type="submit" value="Registrar volta">
+        </form>
     </div>
+    <script src="scripts.js"></script>
 </body>
 </html>
+EOF
+
+sudo tee registra_saida.php << 'EOF'
+<?php
+$host = 'localhost';
+$db = 'controle_veiculos';
+$user = 'teste';
+$pass = 'test@12345';
+
+$conn = new mysqli($host, $user, $pass, $db);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$placa = $_POST['placa'];
+$motorista = $_POST['motorista'];
+$quilometragem_saida = $_POST['quilometragem_saida'];
+$destino = $_POST['destino'];
+$data_hora_saida = $_POST['data_hora_saida'];
+
+// Verifica se o veículo já está em uso
+$veiculo_em_uso_query = "SELECT * FROM entradas_saidas WHERE veiculo_id = (SELECT id FROM veiculos WHERE placa='$placa') AND data_hora_volta IS NULL";
+$veiculo_em_uso_result = $conn->query($veiculo_em_uso_query);
+
+if ($veiculo_em_uso_result->num_rows > 0) {
+    echo "<script>alert('Veículo já está em uso.'); window.location.href='index.php';</script>";
+    $conn->close();
+    exit();
+}
+
+$motorista_id_query = "SELECT id FROM motoristas WHERE nome='$motorista'";
+$motorista_id_result = $conn->query($motorista_id_query);
+$motorista_id_row = $motorista_id_result->fetch_assoc();
+$motorista_id = $motorista_id_row['id'];
+
+$veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
+$veiculo_id_result = $conn->query($veiculo_id_query);
+$veiculo_id_row = $veiculo_id_result->fetch_assoc();
+$veiculo_id = $veiculo_id_row['id'];
+
+$sql = "INSERT INTO entradas_saidas (veiculo_id, motorista_id, quilometragem_saida, data_hora_saida, destino) 
+        VALUES ('$veiculo_id', '$motorista_id', '$quilometragem_saida', '$data_hora_saida', '$destino')";
+
+if ($conn->query($sql) === TRUE) {
+    echo "<script>alert('Registro de saída bem-sucedido!'); window.location.href='index.php';</script>";
+} else {
+    echo "<script>alert('Erro ao registrar saída: " . $conn->error . "'); window.location.href='index.php';</script>";
+}
+
+$conn->close();
+?>
 EOF
 
 # Cria o arquivo PHP para registrar volta
