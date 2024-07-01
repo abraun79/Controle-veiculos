@@ -4,6 +4,9 @@
 sudo apt update
 sudo apt install -y apache2 mysql-server php libapache2-mod-php php-mysql
 
+# Configurar permissões
+sudo chmod -R 755 /var/www/html/
+
 # Habilita e inicia o Apache e MySQL
 sudo systemctl enable apache2
 sudo systemctl start apache2
@@ -11,6 +14,11 @@ sudo systemctl enable mysql
 sudo systemctl start mysql
 
 # Cria o arquivo de configuração do MySQL
+sudo mysql -e "CREATE DATABASE controle_veiculos;"
+sudo mysql -e "CREATE USER 'teste'@'localhost' IDENTIFIED BY 'test@12345';"
+sudo mysql -e "GRANT ALL PRIVILEGES ON controle_veiculos.* TO 'teste'@'localhost';"
+sudo mysql -e "FLUSH PRIVILEGES;"
+
 sudo tee /etc/mysql/my.cnf <<EOF
 [mysqld]
 skip-grant-tables
@@ -63,6 +71,26 @@ INSERT IGNORE INTO motoristas (nome) VALUES
 ('MOTORISTA03'),
 ('MOTORISTA04');
 EOF
+
+# Configuração do Apache
+sudo mkdir -p /var/www/html/veiculos
+sudo tee /etc/apache2/sites-available/veiculos.conf <<EOF
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html/veiculos
+    ErrorLog \${APACHE_LOG_DIR}/error.log
+    CustomLog \${APACHE_LOG_DIR}/access.log combined
+    <Directory /var/www/html/veiculos>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+</VirtualHost>
+EOF
+
+sudo a2ensite veiculos.conf
+sudo a2enmod rewrite
+sudo systemctl restart apache2
 
 # Cria diretórios e arquivos do projeto
 sudo mkdir -p /var/www/html/veiculos
