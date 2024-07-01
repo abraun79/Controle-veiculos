@@ -1,4 +1,14 @@
-#!/bin/bash
+#!/bin/bash~
+
+# Atualiza o sistema e instala o Apache, MySQL e PHP
+sudo apt update
+sudo apt install -y apache2 mysql-server php libapache2-mod-php php-mysql
+
+# Habilita e inicia o Apache e MySQL
+sudo systemctl enable apache2
+sudo systemctl start apache2
+sudo systemctl enable mysql
+sudo systemctl start mysql
 
 # Cria o arquivo de configuração do MySQL
 sudo tee /etc/mysql/my.cnf <<EOF
