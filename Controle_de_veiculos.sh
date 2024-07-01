@@ -161,6 +161,7 @@ sudo tee index.php << 'EOF'
 </html>
 EOF
 
+# Cria o arquivo PHP para registrar saída
 sudo tee registra_saida.php << 'EOF'
 <?php
 $host = 'localhost';
@@ -214,7 +215,7 @@ $conn->close();
 EOF
 
 # Cria o arquivo PHP para registrar volta
-sudo tee /var/www/html/registra_volta.php << 'EOF'
+sudo tee registra_volta.php << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -297,7 +298,7 @@ sudo tee /var/www/html/registra_volta.php << 'EOF'
 EOF
 
 # Cria o arquivo PHP para gerar relatórios
-sudo tee /var/www/html/relatorio.php << 'EOF'
+sudo tee relatorio.php << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -387,7 +388,7 @@ sudo tee /var/www/html/relatorio.php << 'EOF'
 EOF
 
 # Cria o arquivo PHP para a página de configurações
-sudo tee /var/www/html/configuracao.php << 'EOF'
+sudo tee configuracao.php << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -508,7 +509,7 @@ sudo tee /var/www/html/configuracao.php << 'EOF'
 EOF
 
 # Cria o arquivo PHP para download do relatório
-sudo tee /var/www/html/download_relatorio.php << 'EOF'
+sudo tee download_relatorio.php << 'EOF'
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data_inicio = $_POST['data_inicio'];
