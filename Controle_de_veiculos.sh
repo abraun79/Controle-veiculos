@@ -13,17 +13,18 @@ sudo mysql -e "CREATE USER 'teste'@'localhost' IDENTIFIED BY 'test@12345';"
 sudo mysql -e "GRANT ALL PRIVILEGES ON controle_veiculos.* TO 'teste'@'localhost';"
 sudo mysql -e "FLUSH PRIVILEGES;"
 
-# Cria as tabelas no banco de dados
-sudo mysql -u teste -ptest@12345 -D controle_veiculos -e "
-CREATE TABLE veiculos (
+mysql -u teste -p'test@12345' controle_veiculos <<EOF
+CREATE TABLE IF NOT EXISTS veiculos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    placa VARCHAR(10) NOT NULL
+    placa VARCHAR(10) UNIQUE NOT NULL
 );
-CREATE TABLE motoristas (
+
+CREATE TABLE IF NOT EXISTS motoristas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL
+    nome VARCHAR(50) UNIQUE NOT NULL
 );
-CREATE TABLE entradas_saidas (
+
+CREATE TABLE IF NOT EXISTS entradas_saidas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     veiculo_id INT NOT NULL,
     motorista_id INT NOT NULL,
@@ -34,7 +35,19 @@ CREATE TABLE entradas_saidas (
     data_hora_volta DATETIME,
     FOREIGN KEY (veiculo_id) REFERENCES veiculos(id),
     FOREIGN KEY (motorista_id) REFERENCES motoristas(id)
-);"
+);
+
+INSERT IGNORE INTO veiculos (placa) VALUES
+('APT-1010'),
+('APT-1011'),
+('ZTX-3245');
+
+INSERT IGNORE INTO motoristas (nome) VALUES
+('MOTORISTA01'),
+('MOTORISTA02'),
+('MOTORISTA03'),
+('MOTORISTA04');
+EOF
 
 # Configura o Apache para o projeto
 sudo mkdir -p /var/www/html/veiculos
