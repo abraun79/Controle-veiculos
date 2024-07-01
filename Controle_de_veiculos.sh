@@ -1,60 +1,66 @@
 #!/bin/bash
 
-# Atualiza o sistema
-sudo apt-get update
-sudo apt-get upgrade -y
+# Atualizar e instalar dependências
+sudo apt update
+sudo apt install -y apache2 php libapache2-mod-php php-mysql mysql-server unzip
 
-# Instala o Apache, MySQL e PHP
-sudo apt-get install apache2 mysql-server php libapache2-mod-php php-mysql -y
+# Configurar permissões
+sudo chmod -R 755 /var/www/html/
 
-# Configura o MySQL
+# Configurar MySQL
 sudo mysql -e "CREATE DATABASE controle_veiculos;"
 sudo mysql -e "CREATE USER 'teste'@'localhost' IDENTIFIED BY 'test@12345';"
 sudo mysql -e "GRANT ALL PRIVILEGES ON controle_veiculos.* TO 'teste'@'localhost';"
 sudo mysql -e "FLUSH PRIVILEGES;"
 
-mysql -u teste -p'test@12345' controle_veiculos <<EOF
-CREATE TABLE IF NOT EXISTS veiculos (
+# Criar tabelas no MySQL
+sudo mysql -u teste -p'test@12345' controle_veiculos << EOF
+CREATE TABLE veiculos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    placa VARCHAR(10) UNIQUE NOT NULL
+    placa VARCHAR(10) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'disponivel'
 );
 
-CREATE TABLE IF NOT EXISTS motoristas (
+CREATE TABLE motoristas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) UNIQUE NOT NULL
+    nome VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS entradas_saidas (
+CREATE TABLE entradas_saidas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     veiculo_id INT NOT NULL,
     motorista_id INT NOT NULL,
     quilometragem_saida INT NOT NULL,
     data_hora_saida DATETIME NOT NULL,
     destino VARCHAR(100) NOT NULL,
-    quilometragem_volta INT,
-    data_hora_volta DATETIME,
+    quilometragem_volta INT DEFAULT NULL,
+    data_hora_volta DATETIME DEFAULT NULL,
     FOREIGN KEY (veiculo_id) REFERENCES veiculos(id),
     FOREIGN KEY (motorista_id) REFERENCES motoristas(id)
 );
 
-INSERT IGNORE INTO veiculos (placa) VALUES
-('APT-1010'),
-('APT-1011'),
-('ZTX-3245');
-
-INSERT IGNORE INTO motoristas (nome) VALUES
-('MOTORISTA01'),
-('MOTORISTA02'),
-('MOTORISTA03'),
-('MOTORISTA04');
+INSERT INTO motoristas (nome) VALUES ('MOTORISTA01'), ('MOTORISTA02'), ('MOTORISTA03'), ('MOTORISTA04');
+INSERT INTO veiculos (placa, status) VALUES ('APT-1010', 'disponivel'), ('APT-1011', 'disponivel'), ('ZTX-3245', 'disponivel');
 EOF
 
-# Configura o Apache para o projeto
-sudo mkdir -p /var/www/html/veiculos
-sudo chown -R $USER:$USER /var/www/html/veiculos
+# Configurar Apache
+sudo sh -c 'echo "<VirtualHost *:80>
+    DocumentRoot /var/www/html/veiculos
+    <Directory /var/www/html/veiculos>
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>" > /etc/apache2/sites-available/veiculos.conf'
 
-# Cria o arquivo header.php
-sudo tee /var/www/html/veiculos/header.php << 'EOF'
+sudo a2ensite veiculos.conf
+sudo a2dissite 000-default.conf
+sudo systemctl restart apache2
+
+# Criar estrutura de diretórios e arquivos
+sudo mkdir -p /var/www/html/veiculos
+
+# Index Page
+sudo tee /var/www/html/veiculos/index.php << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -65,295 +71,418 @@ sudo tee /var/www/html/veiculos/header.php << 'EOF'
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Controle de Veículos</h1>
-            <nav>
-                <ul>
-                    <li><a href="index.php">Início</a></li>
-                    <li><a href="registro_saida.php">Registrar Saída</a></li>
-                    <li><a href="registro_volta.php">Registrar Volta</a></li>
-                    <li><a href="relatorio.php">Relatório</a></li>
-                    <li><a href="configuracao.php">Configuração</a></li>
-                </ul>
-            </nav>
-        </header>
-        <main>
-EOF
+        <h1>Controle de Veículos</h1>
+        <form action="registra_saida.php" method="post">
+            <label for="placa">Placa do Veículo:</label>
+            <select id="placa" name="placa" required>
+                <option value="APT-1010">APT-1010</option>
+                <option value="APT-1011">APT-1011</option>
+                <option value="ZTX-3245">ZTX-3245</option>
+            </select>
 
-# Cria o arquivo footer.php
-sudo tee /var/www/html/veiculos/footer.php << 'EOF'
-        </main>
+            <label for="motorista">Motorista:</label>
+            <select id="motorista" name="motorista" required>
+                <option value="MOTORISTA01">MOTORISTA01</option>
+                <option value="MOTORISTA02">MOTORISTA02</option>
+                <option value="MOTORISTA03">MOTORISTA03</option>
+                <option value="MOTORISTA04">MOTORISTA04</option>
+            </select>
+
+            <label for="quilometragem_saida">Quilometragem de Saída:</label>
+            <input type="number" id="quilometragem_saida" name="quilometragem_saida" required>
+
+            <label for="data_hora_saida">Data e Hora de Saída:</label>
+            <input type="datetime-local" id="data_hora_saida" name="data_hora_saida" required>
+
+            <label for="destino">Destino:</label>
+            <input type="text" id="destino" name="destino" required>
+
+            <input type="submit" value="Registrar Saída">
+        </form>
+
+        <form action="registra_volta.php" method="post">
+            <label for="placa">Placa do Veículo:</label>
+            <select id="placa" name="placa" required>
+                <option value="APT-1010">APT-1010</option>
+                <option value="APT-1011">APT-1011</option>
+                <option value="ZTX-3245">ZTX-3245</option>
+            </select>
+
+            <label for="motorista">Motorista:</label>
+            <select id="motorista" name="motorista" required>
+                <option value="MOTORISTA01">MOTORISTA01</option>
+                <option value="MOTORISTA02">MOTORISTA02</option>
+                <option value="MOTORISTA03">MOTORISTA03</option>
+                <option value="MOTORISTA04">MOTORISTA04</option>
+            </select>
+
+            <label for="quilometragem_volta">Quilometragem de Volta:</label>
+            <input type="number" id="quilometragem_volta" name="quilometragem_volta" required>
+
+            <label for="data_hora_volta">Data e Hora de Volta:</label>
+            <input type="datetime-local" id="data_hora_volta" name="data_hora_volta" required>
+
+            <input type="submit" value="Registrar Volta">
+        </form>
+
+        <form action="relatorio.php" method="get" style="position: absolute; top: 10px; right: 10px;">
+            <input type="submit" value="Relatório">
+        </form>
     </div>
-    <script src="scripts.js"></script>
 </body>
 </html>
 EOF
 
-# Cria o arquivo index.php
-sudo tee /var/www/html/veiculos/index.php << 'EOF'
-<?php include 'header.php'; ?>
-<p>Bem-vindo ao sistema de controle de veículos. Use o menu acima para navegar.</p>
-<?php include 'footer.php'; ?>
+# Register Departure Page
+sudo tee /var/www/html/veiculos/registra_saida.php << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Saída</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Saída</h1>
+        <form action="" method="post">
+            <label for="placa">Placa do Veículo:</label>
+            <select id="placa" name="placa" required>
+                <option value="APT-1010">APT-1010</option>
+                <option value="APT-1011">APT-1011</option>
+                <option value="ZTX-3245">ZTX-3245</option>
+            </select>
+
+            <label for="motorista">Motorista:</label>
+            <select id="motorista" name="motorista" required>
+                <option value="MOTORISTA01">MOTORISTA01</option>
+                <option value="MOTORISTA02">MOTORISTA02</option>
+                <option value="MOTORISTA03">MOTORISTA03</option>
+                <option value="MOTORISTA04">MOTORISTA04</option>
+            </select>
+
+            <label for="quilometragem_saida">Quilometragem de Saída:</label>
+            <input type="number" id="quilometragem_saida" name="quilometragem_saida" required>
+
+            <label for="data_hora_saida">Data e Hora de Saída:</label>
+            <input type="datetime-local" id="data_hora_saida" name="data_hora_saida" required>
+
+            <label for="destino">Destino:</label>
+            <input type="text" id="destino" name="destino" required>
+
+            <input type="submit" value="Registrar Saída">
+        </form>
+
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $host = 'localhost';
+            $db = 'controle_veiculos';
+            $user = 'teste';
+            $pass = 'test@12345';
+
+            $conn = new mysqli($host, $user, $pass, $db);
+
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            $placa = $_POST['placa'];
+            $motorista = $_POST['motorista'];
+            $quilometragem_saida = $_POST['quilometragem_saida'];
+            $data_hora_saida = $_POST['data_hora_saida'];
+            $destino = $_POST['destino'];
+
+            // Verificar se o veículo já está em uso
+            $veiculo_status_query = "SELECT status FROM veiculos WHERE placa='$placa'";
+            $veiculo_status_result = $conn->query($veiculo_status_query);
+            $veiculo_status_row = $veiculo_status_result->fetch_assoc();
+
+            if ($veiculo_status_row['status'] === 'em uso') {
+                echo "<p class='error'>Falha de registro: Veículo já está em uso.</p>";
+            } else {
+                // Obter IDs do motorista e do veículo
+                $motorista_id_query = "SELECT id FROM motoristas WHERE nome='$motorista'";
+                $motorista_id_result = $conn->query($motorista_id_query);
+                $motorista_id_row = $motorista_id_result->fetch_assoc();
+                $motorista_id = $motorista_id_row['id'];
+
+                $veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
+                $veiculo_id_result = $conn->query($veiculo_id_query);
+                $veiculo_id_row = $veiculo_id_result->fetch_assoc();
+                $veiculo_id = $veiculo_id_row['id'];
+
+                // Registrar saída
+                $sql = "INSERT INTO entradas_saidas (veiculo_id, motorista_id, quilometragem_saida, data_hora_saida, destino) 
+                        VALUES ('$veiculo_id', '$motorista_id', '$quilometragem_saida', '$data_hora_saida', '$destino')";
+
+                if ($conn->query($sql) === TRUE) {
+                    // Atualizar status do veículo para 'em uso'
+                    $update_status_sql = "UPDATE veiculos SET status='em uso' WHERE id='$veiculo_id'";
+                    $conn->query($update_status_sql);
+
+                    echo "<p class='success'>Registrado com sucesso</p>";
+                } else {
+                    echo "<p class='error'>Falha de registro: " . $conn->error . "</p>";
+                }
+            }
+
+            $conn->close();
+        }
+        ?>
+        <form action="index.php" method="get" style="position: absolute; top: 10px; right: 10px;">
+            <input type="submit" value="Voltar ao início">
+        </form>
+    </div>
+</body>
+</html>
 EOF
 
-# Cria o arquivo registro_saida.php
-sudo tee /var/www/html/veiculos/registro_saida.php << 'EOF'
-<?php include 'header.php'; ?>
-<h2>Registro de Saída</h2>
-<form id="registro-saida-form" action="processa_saida.php" method="post">
-    <label for="placa">Placa do Veículo:</label>
-    <select id="placa" name="placa" required>
-        <option value="">Selecione a Placa</option>
+# Register Return Page
+sudo tee /var/www/html/veiculos/registra_volta.php << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Volta</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Volta</h1>
+        <form action="" method="post">
+            <label for="placa">Placa do Veículo:</label>
+            <select id="placa" name="placa" required>
+                <option value="APT-1010">APT-1010</option>
+                <option value="APT-1011">APT-1011</option>
+                <option value="ZTX-3245">ZTX-3245</option>
+            </select>
+
+            <label for="motorista">Motorista:</label>
+            <select id="motorista" name="motorista" required>
+                <option value="MOTORISTA01">MOTORISTA01</option>
+                <option value="MOTORISTA02">MOTORISTA02</option>
+                <option value="MOTORISTA03">MOTORISTA03</option>
+                <option value="MOTORISTA04">MOTORISTA04</option>
+            </select>
+
+            <label for="quilometragem_volta">Quilometragem de Volta:</label>
+            <input type="number" id="quilometragem_volta" name="quilometragem_volta" required>
+
+            <label for="data_hora_volta">Data e Hora de Volta:</label>
+            <input type="datetime-local" id="data_hora_volta" name="data_hora_volta" required>
+
+            <input type="submit" value="Registrar Volta">
+        </form>
+
         <?php
-        $conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-        $result = $conn->query("SELECT placa FROM veiculos");
-        while ($row = $result->fetch_assoc()) {
-            echo "<option value='{$row['placa']}'>{$row['placa']}</option>";
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $host = 'localhost';
+            $db = 'controle_veiculos';
+            $user = 'teste';
+            $pass = 'test@12345';
+
+            $conn = new mysqli($host, $user, $pass, $db);
+
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            $placa = $_POST['placa'];
+            $motorista = $_POST['motorista'];
+            $quilometragem_volta = $_POST['quilometragem_volta'];
+            $data_hora_volta = $_POST['data_hora_volta'];
+
+            // Obter IDs do motorista e do veículo
+            $motorista_id_query = "SELECT id FROM motoristas WHERE nome='$motorista'";
+            $motorista_id_result = $conn->query($motorista_id_query);
+            $motorista_id_row = $motorista_id_result->fetch_assoc();
+            $motorista_id = $motorista_id_row['id'];
+
+            $veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
+            $veiculo_id_result = $conn->query($veiculo_id_query);
+            $veiculo_id_row = $veiculo_id_result->fetch_assoc();
+            $veiculo_id = $veiculo_id_row['id'];
+
+            // Atualizar registro de saída com informações de volta
+            $sql = "UPDATE entradas_saidas 
+                    SET quilometragem_volta='$quilometragem_volta', data_hora_volta='$data_hora_volta'
+                    WHERE veiculo_id='$veiculo_id' AND motorista_id='$motorista_id' AND quilometragem_volta IS NULL";
+
+            if ($conn->query($sql) === TRUE) {
+                // Atualizar status do veículo para 'disponivel'
+                $update_status_sql = "UPDATE veiculos SET status='disponivel' WHERE id='$veiculo_id'";
+                $conn->query($update_status_sql);
+
+                echo "<p class='success'>Registrado com sucesso</p>";
+            } else {
+                echo "<p class='error'>Falha de registro: " . $conn->error . "</p>";
+            }
+
+            $conn->close();
         }
-        $conn->close();
         ?>
-    </select>
-
-    <label for="motorista">Motorista:</label>
-    <select id="motorista" name="motorista" required>
-        <option value="">Selecione o Motorista</option>
-        <?php
-        $conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-        $result = $conn->query("SELECT nome FROM motoristas");
-        while ($row = $result->fetch_assoc()) {
-            echo "<option value='{$row['nome']}'>{$row['nome']}</option>";
-        }
-        $conn->close();
-        ?>
-    </select>
-
-    <label for="quilometragem-saida">Quilometragem de Saída:</label>
-    <input type="number" id="quilometragem-saida" name="quilometragem_saida" required>
-
-    <label for="data-hora-saida">Data e Hora de Saída:</label>
-    <input type="datetime-local" id="data-hora-saida" name="data_hora_saida" required>
-
-    <label for="destino">Destino:</label>
-    <input type="text" id="destino" name="destino" required>
-
-    <input type="submit" value="Registrar Saída">
-</form>
-<?php include 'footer.php'; ?>
+        <form action="index.php" method="get" style="position: absolute; top: 10px; right: 10px;">
+            <input type="submit" value="Voltar ao início">
+        </form>
+    </div>
+</body>
+</html>
 EOF
 
-# Cria o arquivo registro_volta.php
-sudo tee /var/www/html/veiculos/registro_volta.php << 'EOF'
-<?php include 'header.php'; ?>
-<h2>Registro de Volta</h2>
-<form id="registro-volta-form" action="processa_volta.php" method="post">
-    <label for="placa">Placa do Veículo:</label>
-    <select id="placa" name="placa" required>
-        <option value="">Selecione a Placa</option>
-        <?php
-        $conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-        $result = $conn->query("SELECT v.placa FROM veiculos v JOIN entradas_saidas e ON v.id = e.veiculo_id WHERE e.data_hora_volta IS NULL");
-        while ($row = $result->fetch_assoc()) {
-            echo "<option value='{$row['placa']}'>{$row['placa']}</option>";
-        }
-        $conn->close();
-        ?>
-    </select>
-
-    <label for="quilometragem-volta">Quilometragem de Volta:</label>
-    <input type="number" id="quilometragem-volta" name="quilometragem_volta" required>
-
-    <label for="data-hora-volta">Data e Hora de Volta:</label>
-    <input type="datetime-local" id="data-hora-volta" name="data_hora_volta" required>
-
-    <input type="submit" value="Registrar Volta">
-</form>
-<?php include 'footer.php'; ?>
-EOF
-
-# Cria o arquivo relatorio.php
+# Report Page
 sudo tee /var/www/html/veiculos/relatorio.php << 'EOF'
-<?php include 'header.php'; ?>
-<h2>Relatório</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Veículo</th>
-            <th>Motorista</th>
-            <th>Quilometragem Saída</th>
-            <th>Data e Hora Saída</th>
-            <th>Destino</th>
-            <th>Quilometragem Volta</th>
-            <th>Data e Hora Volta</th>
-        </tr>
-    </thead>
-    <tbody>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Veículos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Relatório de Veículos</h1>
+        <form action="relatorio.php" method="get">
+            <label for="data_inicio">Data Início:</label>
+            <input type="datetime-local" id="data_inicio" name="data_inicio" required>
+
+            <label for="data_fim">Data Fim:</label>
+            <input type="datetime-local" id="data_fim" name="data_fim" required>
+
+            <input type="submit" value="Gerar Relatório">
+        </form>
         <?php
-        $conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-        $query = "
-        SELECT v.placa, m.nome, e.quilometragem_saida, e.data_hora_saida, e.destino, e.quilometragem_volta, e.data_hora_volta
-        FROM entradas_saidas e
-        JOIN veiculos v ON e.veiculo_id = v.id
-        JOIN motoristas m ON e.motorista_id = m.id";
-        $result = $conn->query($query);
-        while ($row = $result->fetch_assoc()) {
-            echo "
-            <tr>
-                <td>{$row['placa']}</td>
-                <td>{$row['nome']}</td>
-                <td>{$row['quilometragem_saida']}</td>
-                <td>{$row['data_hora_saida']}</td>
-                <td>{$row['destino']}</td>
-                <td>{$row['quilometragem_volta']}</td>
-                <td>{$row['data_hora_volta']}</td>
-            </tr>";
+        if (isset($_GET['data_inicio']) && isset($_GET['data_fim'])) {
+            $host = 'localhost';
+            $db = 'controle_veiculos';
+            $user = 'teste';
+            $pass = 'test@12345';
+
+            $conn = new mysqli($host, $user, $pass, $db);
+
+            if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+            }
+
+            $data_inicio = $_GET['data_inicio'];
+            $data_fim = $_GET['data_fim'];
+
+            $sql = "SELECT v.placa, m.nome, e.quilometragem_saida, e.data_hora_saida, e.destino, e.quilometragem_volta, e.data_hora_volta
+                    FROM entradas_saidas e
+                    JOIN veiculos v ON e.veiculo_id = v.id
+                    JOIN motoristas m ON e.motorista_id = m.id
+                    WHERE e.data_hora_saida BETWEEN '$data_inicio' AND '$data_fim'";
+
+            $result = $conn->query($sql);
+
+            if ($result->num_rows > 0) {
+                echo "<table>
+                        <tr>
+                            <th>Placa</th>
+                            <th>Motorista</th>
+                            <th>Quilometragem Saída</th>
+                            <th>Data Hora Saída</th>
+                            <th>Destino</th>
+                            <th>Quilometragem Volta</th>
+                            <th>Data Hora Volta</th>
+                        </tr>";
+                while ($row = $result->fetch_assoc()) {
+                    echo "<tr>
+                            <td>" . htmlspecialchars($row['placa']) . "</td>
+                            <td>" . htmlspecialchars($row['nome']) . "</td>
+                            <td>" . htmlspecialchars($row['quilometragem_saida']) . "</td>
+                            <td>" . htmlspecialchars($row['data_hora_saida']) . "</td>
+                            <td>" . htmlspecialchars($row['destino']) . "</td>
+                            <td>" . htmlspecialchars($row['quilometragem_volta']) . "</td>
+                            <td>" . htmlspecialchars($row['data_hora_volta']) . "</td>
+                          </tr>";
+                }
+                echo "</table>";
+            } else {
+                echo "<p>Nenhum registro encontrado para o período selecionado.</p>";
+            }
+
+            $conn->close();
         }
-        $conn->close();
         ?>
-    </tbody>
-</table>
-<?php include 'footer.php'; ?>
+        <form action="index.php" method="get" style="position: absolute; top: 10px; right: 10px;">
+            <input type="submit" value="Voltar ao início">
+        </form>
+    </div>
+</body>
+</html>
 EOF
 
-# Cria o arquivo configuracao.php
-sudo tee /var/www/html/veiculos/configuracao.php << 'EOF'
-<?php include 'header.php'; ?>
-<h2>Configuração</h2>
-<form id="configuracao-form" action="adicionar.php" method="post">
-    <label for="novo-veiculo">Adicionar Veículo (Placa):</label>
-    <input type="text" id="novo-veiculo" name="novo_veiculo">
-    <input type="submit" name="adicionar_veiculo" value="Adicionar Veículo">
-</form>
-<form id="configuracao-form" action="adicionar.php" method="post">
-    <label for="novo-motorista">Adicionar Motorista (Nome):</label>
-    <input type="text" id="novo-motorista" name="novo_motorista">
-    <input type="submit" name="adicionar_motorista" value="Adicionar Motorista">
-</form>
-<?php include 'footer.php'; ?>
-EOF
-
-# Cria o arquivo processa_saida.php
-sudo tee /var/www/html/veiculos/processa_saida.php << 'EOF'
-<?php
-$placa = $_POST['placa'];
-$motorista = $_POST['motorista'];
-$quilometragem_saida = $_POST['quilometragem_saida'];
-$data_hora_saida = $_POST['data_hora_saida'];
-$destino = $_POST['destino'];
-
-$conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-$veiculo_id = $conn->query("SELECT id FROM veiculos WHERE placa='$placa'")->fetch_assoc()['id'];
-$motorista_id = $conn->query("SELECT id FROM motoristas WHERE nome='$motorista'")->fetch_assoc()['id'];
-
-$query = "INSERT INTO entradas_saidas (veiculo_id, motorista_id, quilometragem_saida, data_hora_saida, destino) VALUES ($veiculo_id, $motorista_id, $quilometragem_saida, '$data_hora_saida', '$destino')";
-$conn->query($query);
-$conn->close();
-
-header('Location: index.php');
-?>
-EOF
-
-# Cria o arquivo processa_volta.php
-sudo tee /var/www/html/veiculos/processa_volta.php << 'EOF'
-<?php
-$placa = $_POST['placa'];
-$quilometragem_volta = $_POST['quilometragem_volta'];
-$data_hora_volta = $_POST['data_hora_volta'];
-
-$conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-$veiculo_id = $conn->query("SELECT id FROM veiculos WHERE placa='$placa'")->fetch_assoc()['id'];
-
-$query = "UPDATE entradas_saidas SET quilometragem_volta=$quilometragem_volta, data_hora_volta='$data_hora_volta' WHERE veiculo_id=$veiculo_id AND data_hora_volta IS NULL";
-$conn->query($query);
-$conn->close();
-
-header('Location: index.php');
-?>
-EOF
-
-# Cria o arquivo adicionar.php
-sudo tee /var/www/html/veiculos/adicionar.php << 'EOF'
-<?php
-if (isset($_POST['adicionar_veiculo'])) {
-    $novo_veiculo = $_POST['novo_veiculo'];
-    $conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-    $conn->query("INSERT INTO veiculos (placa) VALUES ('$novo_veiculo')");
-    $conn->close();
-} elseif (isset($_POST['adicionar_motorista'])) {
-    $novo_motorista = $_POST['novo_motorista'];
-    $conn = new mysqli('localhost', 'teste', 'test@12345', 'controle_veiculos');
-    $conn->query("INSERT INTO motoristas (nome) VALUES ('$novo_motorista')");
-    $conn->close();
-}
-
-header('Location: configuracao.php');
-?>
-EOF
-
-# Cria o arquivo styles.css
+# Estilos
 sudo tee /var/www/html/veiculos/styles.css << 'EOF'
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
-}
-
-.container {
-    width: 80%;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-header h1 {
+    background-color: #121212;
+    color: #ffffff;
     margin: 0;
-}
-
-nav ul {
-    list-style: none;
     padding: 0;
 }
-
-nav ul li {
-    display: inline;
-    margin-right: 10px;
+.container {
+    width: 50%;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    background-color: #1e1e1e;
 }
-
-nav ul li a {
-    text-decoration: none;
-    color: #333;
+h1 {
+    text-align: center;
+    color: #4CAF50;
 }
-
+form {
+    display: flex;
+    flex-direction: column;
+}
+label {
+    margin-top: 10px;
+}
+input, select {
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 5px;
+}
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    background-color: #1e1e1e;
 }
-
-table, th, td {
-    border: 1px solid #ddd;
-}
-
 th, td {
-    padding: 8px;
+    padding: 10px;
+    border: 1px solid #333;
     text-align: left;
 }
+th {
+    background-color: #333;
+}
+.success {
+    color: #4CAF50;
+}
+.error {
+    color: #FF0000;
+}
 EOF
 
-# Cria o arquivo scripts.js
-sudo tee /var/www/html/veiculos/scripts.js << 'EOF'
-document.addEventListener('DOMContentLoaded', function() {
-    // Scripts JavaScript futuros podem ser adicionados aqui
-});
-EOF
-
-# Configura permissões
-sudo chown -R www-data:www-data /var/www/html/veiculos
-sudo chmod -R 755 /var/www/html/veiculos
-
-echo "Instalação completa. Acesse o sistema através do endereço http://localhost/veiculos"
+echo "Instalação e configuração concluídas com sucesso."
