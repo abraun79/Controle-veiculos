@@ -128,6 +128,10 @@ sudo tee /var/www/html/veiculos/index.php << 'EOF'
         <form action="relatorio.php" method="get" style="position: absolute; top: 10px; right: 10px;">
             <input type="submit" value="Relatório">
         </form>
+
+        <form action="configurition.php" method="get" style="position: absolute; top: 10px; right: 10px;">
+            <input type="submit" value="Configurações">
+        </form>
     </div>
 </body>
 </html>
