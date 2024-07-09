@@ -12,21 +12,41 @@
         <form action="" method="post">
             <label for="placa">Placa do Veículo:</label>
             <select id="placa" name="placa" required>
-                <option value="APT-1010">APT-1010</option>
-                <option value="APT-1011">APT-1011</option>
-                <option value="ZTX-3245">ZTX-3245</option>
+                <?php
+                // Conectar ao banco de dados
+                $host = 'localhost';
+                $db = 'controle_veiculos';
+                $user = 'teste';
+                $pass = 'test@12345';
+
+                $conn = new mysqli($host, $user, $pass, $db);
+                if ($conn->connect_error) {
+                    die("Connection failed: " . $conn->connect_error);
+                }
+
+                // Carregar placas dinamicamente
+                $placas_query = "SELECT placa FROM veiculos";
+                $placas_result = $conn->query($placas_query);
+                while ($placa_row = $placas_result->fetch_assoc()) {
+                    echo '<option value="' . $placa_row['placa'] . '">' . $placa_row['placa'] . '</option>';
+                }
+                ?>
             </select>
 
             <label for="motorista">Motorista:</label>
             <select id="motorista" name="motorista" required>
-                <option value="MOTORISTA01">MOTORISTA01</option>
-                <option value="MOTORISTA02">MOTORISTA02</option>
-                <option value="MOTORISTA03">MOTORISTA03</option>
-                <option value="MOTORISTA04">MOTORISTA04</option>
+                <?php
+                // Carregar motoristas dinamicamente
+                $motoristas_query = "SELECT nome FROM motoristas";
+                $motoristas_result = $conn->query($motoristas_query);
+                while ($motorista_row = $motoristas_result->fetch_assoc()) {
+                    echo '<option value="' . $motorista_row['nome'] . '">' . $motorista_row['nome'] . '</option>';
+                }
+                ?>
             </select>
 
             <label for="quilometragem_volta">Quilometragem de Volta:</label>
-            <input type="number" id="quilometragem_volta" name="quilometragem_volta" required>
+            <input type="number" id="quilometragem_volta" name="quilometragem_volta" required min="0" max="1000000">
 
             <label for="data_hora_volta">Data e Hora de Volta:</label>
             <input type="datetime-local" id="data_hora_volta" name="data_hora_volta" required>
@@ -63,27 +83,34 @@
             $veiculo_id_row = $veiculo_id_result->fetch_assoc();
             $veiculo_id = $veiculo_id_row['id'];
 
-            // Atualizar registro de saída com informações de volta
-            $sql = "UPDATE entradas_saidas 
-                    SET quilometragem_volta='$quilometragem_volta', data_hora_volta='$data_hora_volta'
-                    WHERE veiculo_id='$veiculo_id' AND motorista_id='$motorista_id' AND quilometragem_volta IS NULL";
-
-            if ($conn->query($sql) === TRUE) {
-                // Atualizar status do veículo para 'disponivel'
-                $update_status_sql = "UPDATE veiculos SET status='disponivel' WHERE id='$veiculo_id'";
-                $conn->query($update_status_sql);
-
-                echo "<p class='success'>Registrado com sucesso</p>";
+            // Validação adicional para garantir que a quilometragem de volta seja um valor dentro do intervalo permitido
+            if ($quilometragem_volta < 0 || $quilometragem_volta > 1000000) {
+                echo "<p class='error'>Valor da quilometragem inválido. Por favor, insira um valor entre 0 e 1.000.000.</p>";
             } else {
-                echo "<p class='error'>Falha de registro: " . $conn->error . "</p>";
+                // Atualizar registro de saída com informações de volta
+                $sql = "UPDATE entradas_saidas 
+                        SET quilometragem_volta='$quilometragem_volta', data_hora_volta='$data_hora_volta'
+                        WHERE veiculo_id='$veiculo_id' AND motorista_id='$motorista_id' AND quilometragem_volta IS NULL";
+
+                if ($conn->query($sql) === TRUE) {
+                    // Atualizar status do veículo para 'disponivel'
+                    $update_status_sql = "UPDATE veiculos SET status='disponivel' WHERE id='$veiculo_id'";
+                    $conn->query($update_status_sql);
+
+                    echo "<p class='success'>Registrado com sucesso</p>";
+                } else {
+                    echo "<p class='error'>Falha de registro: " . $conn->error . "</p>";
+                }
             }
 
             $conn->close();
         }
         ?>
-        <form action="index.php" method="get" style="position: absolute; top: 10px; right: 10px;">
+
+        <form action="index.php" method="get" style="margin-top: 20px;">
             <input type="submit" value="Voltar ao início">
         </form>
     </div>
 </body>
 </html>
+

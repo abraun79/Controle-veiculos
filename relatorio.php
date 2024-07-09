@@ -148,7 +148,7 @@ class PDF extends FPDF
             $conn->close();
         }
         ?>
-        <form action="index.php" method="get" style="position: absolute; top: 10px; right: 10px;">
+        <form action="index.php" method="get" style="margin-top: 20px;">
             <input type="submit" value="Voltar ao início">
         </form>
     </div>

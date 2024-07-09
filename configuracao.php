@@ -71,11 +71,6 @@ $drivers = $conn->query("SELECT * FROM motoristas");
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="header">
-        <form action="index.php" method="get" style="position: absolute; top: 10px; right: 10px;">
-            <input type="submit" value="Voltar ao início">
-        </form>
-    </div>
     <div class="container">
         <h1>Configuração de Veículos e Motoristas</h1>
         
@@ -112,6 +107,9 @@ $drivers = $conn->query("SELECT * FROM motoristas");
                 <?php } ?>
             </select>
             <input type="submit" name="delete_driver" value="Excluir Motorista">
+        </form>
+        <form action="index.php" method="get" style="margin-top: 20px;">
+            <input type="submit" value="Voltar ao início">
         </form>
     </div>
 </body>

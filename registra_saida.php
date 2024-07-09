@@ -1,101 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Saída</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="container">
-        <h1>Registro de Saída</h1>
-        <form action="" method="post">
-            <label for="placa">Placa do Veículo:</label>
-            <select id="placa" name="placa" required>
-                <option value="APT-1010">APT-1010</option>
-                <option value="APT-1011">APT-1011</option>
-                <option value="ZTX-3245">ZTX-3245</option>
-            </select>
+<?php
+$servername = "localhost";
+$username = "teste";
+$password = "test@12345";
+$dbname = "controle_veiculos";
 
-            <label for="motorista">Motorista:</label>
-            <select id="motorista" name="motorista" required>
-                <option value="MOTORISTA01">MOTORISTA01</option>
-                <option value="MOTORISTA02">MOTORISTA02</option>
-                <option value="MOTORISTA03">MOTORISTA03</option>
-                <option value="MOTORISTA04">MOTORISTA04</option>
-            </select>
+// Cria a conexão
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-            <label for="quilometragem_saida">Quilometragem de Saída:</label>
-            <input type="number" id="quilometragem_saida" name="quilometragem_saida" required>
+// Verifica a conexão
+if ($conn->connect_error) {
+    die("Conexão falhou: " . $conn->connect_error);
+}
 
-            <label for="data_hora_saida">Data e Hora de Saída:</label>
-            <input type="datetime-local" id="data_hora_saida" name="data_hora_saida" required>
+// Verifica se o formulário foi submetido
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $placa = $_POST['placa'];
+    $motorista = $_POST['motorista'];
+    $data_hora_saida = $_POST['data_hora_saida'];
+    $destino = $_POST['destino'];
 
-            <label for="destino">Destino:</label>
-            <input type="text" id="destino" name="destino" required>
+    // Busca o ID do veículo
+    $stmt = $conn->prepare("SELECT id FROM veiculos WHERE placa = ?");
+    $stmt->bind_param("s", $placa);
+    $stmt->execute();
+    $stmt->bind_result($veiculo_id);
+    $stmt->fetch();
+    $stmt->close();
 
-            <input type="submit" value="Registrar Saída">
-        </form>
+    // Verifica se o ID do veículo foi encontrado
+    if (!$veiculo_id) {
+        die("Veículo não encontrado");
+    }
 
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $host = 'localhost';
-            $db = 'controle_veiculos';
-            $user = 'teste';
-            $pass = 'test@12345';
+    // Busca o ID do motorista
+    $stmt = $conn->prepare("SELECT id FROM motoristas WHERE nome = ?");
+    $stmt->bind_param("s", $motorista);
+    $stmt->execute();
+    $stmt->bind_result($motorista_id);
+    $stmt->fetch();
+    $stmt->close();
 
-            $conn = new mysqli($host, $user, $pass, $db);
+    // Verifica se o ID do motorista foi encontrado
+    if (!$motorista_id) {
+        die("Motorista não encontrado");
+    }
 
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
-            }
+    // Consulta a última quilometragem de volta
+    $stmt = $conn->prepare("SELECT quilometragem_volta FROM entradas_saidas WHERE veiculo_id = ? ORDER BY id DESC LIMIT 1");
+    $stmt->bind_param("i", $veiculo_id);
+    $stmt->execute();
+    $stmt->bind_result($quilometragem_volta);
+    $stmt->fetch();
+    $stmt->close();
 
-            $placa = $_POST['placa'];
-            $motorista = $_POST['motorista'];
-            $quilometragem_saida = $_POST['quilometragem_saida'];
-            $data_hora_saida = $_POST['data_hora_saida'];
-            $destino = $_POST['destino'];
+    // Se não houver registro anterior, define a quilometragem de saída como 0
+    $quilometragem_saida = $quilometragem_volta ?? 0;
 
-            // Verificar se o veículo já está em uso
-            $veiculo_status_query = "SELECT status FROM veiculos WHERE placa='$placa'";
-            $veiculo_status_result = $conn->query($veiculo_status_query);
-            $veiculo_status_row = $veiculo_status_result->fetch_assoc();
+    // Insere a nova saída
+    $stmt = $conn->prepare("INSERT INTO entradas_saidas (veiculo_id, motorista_id, quilometragem_saida, data_hora_saida, destino) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("iiiss", $veiculo_id, $motorista_id, $quilometragem_saida, $data_hora_saida, $destino);
 
-            if ($veiculo_status_row['status'] === 'em uso') {
-                echo "<p class='error'>Falha de registro: Veículo já está em uso.</p>";
-            } else {
-                // Obter IDs do motorista e do veículo
-                $motorista_id_query = "SELECT id FROM motoristas WHERE nome='$motorista'";
-                $motorista_id_result = $conn->query($motorista_id_query);
-                $motorista_id_row = $motorista_id_result->fetch_assoc();
-                $motorista_id = $motorista_id_row['id'];
+    if ($stmt->execute()) {
+        echo "Saída registrada com sucesso!";
+    } else {
+        echo "Erro ao registrar saída: " . $stmt->error;
+    }
 
-                $veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
-                $veiculo_id_result = $conn->query($veiculo_id_query);
-                $veiculo_id_row = $veiculo_id_result->fetch_assoc();
-                $veiculo_id = $veiculo_id_row['id'];
+    $stmt->close();
+    $conn->close();
+}
+?>
 
-                // Registrar saída
-                $sql = "INSERT INTO entradas_saidas (veiculo_id, motorista_id, quilometragem_saida, data_hora_saida, destino) 
-                        VALUES ('$veiculo_id', '$motorista_id', '$quilometragem_saida', '$data_hora_saida', '$destino')";
-
-                if ($conn->query($sql) === TRUE) {
-                    // Atualizar status do veículo para 'em uso'
-                    $update_status_sql = "UPDATE veiculos SET status='em uso' WHERE id='$veiculo_id'";
-                    $conn->query($update_status_sql);
-
-                    echo "<p class='success'>Registrado com sucesso</p>";
-                } else {
-                    echo "<p class='error'>Falha de registro: " . $conn->error . "</p>";
-                }
-            }
-
-            $conn->close();
-        }
-        ?>
-        <form action="index.php" method="get" style="position: absolute; top: 10px; right: 10px;">
-            <input type="submit" value="Voltar ao início">
-        </form>
-    </div>
-</body>
-</html>
