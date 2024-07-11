@@ -56,8 +56,8 @@ CREATE TABLE entradas_saidas (
     FOREIGN KEY (motorista_id) REFERENCES motoristas(id)
 );
 
-INSERT INTO motoristas (nome) VALUES ('MOTORISTA01'), ('MOTORISTA02'), ('MOTORISTA03'), ('MOTORISTA04');
-INSERT INTO veiculos (placa, status) VALUES ('APT-1010', 'disponivel'), ('APT-1011', 'disponivel'), ('ZTX-3245', 'disponivel');
+INSERT INTO motoristas (nome) VALUES ('Alessandro'), ('Tiago'), ('Rodrigo'), ('Pinheiro');
+INSERT INTO veiculos (placa, status) VALUES ('FORD KA - ATT0944', 'disponivel'), ('FORD KA - AXZ2472', 'disponivel');
 EOF
 
 # Configurar Apache
@@ -71,7 +71,9 @@ sudo sh -c 'echo "<VirtualHost *:80>
 
 sudo a2ensite veiculos.conf
 sudo a2dissite 000-default.conf
-sudo systemctl restart apache2
+
+#Copiar os arquivos para o /var/www/html/veiculos
+sudo cp *.php *.css /var/www/html/veiculos
 
 #Dar permissões as pastas
 sudo chown -R www-data:www-data /var/www/html/veiculos
@@ -79,8 +81,6 @@ sudo chmod -R 755 /var/www/html/veiculos
 sudo chown -R www-data:www-data /var/www/html/veiculos/vendor
 sudo chmod -R 755 /var/www/html/veiculos/vendor
 
-#Copiar os arquivos para o /var/www/html/veiculos
-sudo cp *.php *.css /var/www/html/veiculos
 sudo start systemctl apache2
 
 echo "Instalação e configuração concluídas com sucesso."
