@@ -43,17 +43,8 @@ class PDF extends FPDF
             <select id="placa" name="placa" required>
                 <option value="todos">Todos</option>
                 <?php
-                $host = 'localhost';
-                $db = 'controle_veiculos';
-                $user = 'teste';
-                $pass = 'test@12345';
-
-                $conn = new mysqli($host, $user, $pass, $db);
-
-                if ($conn->connect_error) {
-                    die("Connection failed: " . $conn->connect_error);
-                }
-
+                include 'db_config.php';
+                
                 $sql = "SELECT DISTINCT placa FROM veiculos";
                 $result = $conn->query($sql);
 

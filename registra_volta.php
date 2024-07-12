@@ -12,36 +12,28 @@
         <form action="" method="post">
             <label for="placa">Placa do Veículo:</label>
             <select id="placa" name="placa" required>
+                <option value="" disabled selected>Selecione uma placa</option>
                 <?php
-                // Conectar ao banco de dados
-                $host = 'localhost';
-                $db = 'controle_veiculos';
-                $user = 'teste';
-                $pass = 'test@12345';
+                include 'db_config.php';
 
-                $conn = new mysqli($host, $user, $pass, $db);
-                if ($conn->connect_error) {
-                    die("Connection failed: " . $conn->connect_error);
+                function loadOptions($conn, $query, $valueField, $textField) {
+                    $result = $conn->query($query);
+                    while ($row = $result->fetch_assoc()) {
+                        echo '<option value="' . htmlspecialchars($row[$valueField]) . '">' . htmlspecialchars($row[$textField]) . '</option>';
+                    }
                 }
 
-                // Carregar placas dinamicamente
                 $placas_query = "SELECT placa FROM veiculos";
-                $placas_result = $conn->query($placas_query);
-                while ($placa_row = $placas_result->fetch_assoc()) {
-                    echo '<option value="' . $placa_row['placa'] . '">' . $placa_row['placa'] . '</option>';
-                }
+                loadOptions($conn, $placas_query, 'placa', 'placa');
                 ?>
             </select>
 
             <label for="motorista">Motorista:</label>
             <select id="motorista" name="motorista" required>
+                <option value="" disabled selected>Selecione um motorista</option>
                 <?php
-                // Carregar motoristas dinamicamente
                 $motoristas_query = "SELECT nome FROM motoristas";
-                $motoristas_result = $conn->query($motoristas_query);
-                while ($motorista_row = $motoristas_result->fetch_assoc()) {
-                    echo '<option value="' . $motorista_row['nome'] . '">' . $motorista_row['nome'] . '</option>';
-                }
+                loadOptions($conn, $motoristas_query, 'nome', 'nome');
                 ?>
             </select>
 
@@ -56,46 +48,42 @@
 
         <?php
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $host = 'localhost';
-            $db = 'controle_veiculos';
-            $user = 'teste';
-            $pass = 'test@12345';
-
-            $conn = new mysqli($host, $user, $pass, $db);
-
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
-            }
-
             $placa = $_POST['placa'];
             $motorista = $_POST['motorista'];
             $quilometragem_volta = $_POST['quilometragem_volta'];
             $data_hora_volta = $_POST['data_hora_volta'];
 
-            // Obter IDs do motorista e do veículo
-            $motorista_id_query = "SELECT id FROM motoristas WHERE nome='$motorista'";
-            $motorista_id_result = $conn->query($motorista_id_query);
+            $motorista_id_query = "SELECT id FROM motoristas WHERE nome=?";
+            $stmt_motorista = $conn->prepare($motorista_id_query);
+            $stmt_motorista->bind_param("s", $motorista);
+            $stmt_motorista->execute();
+            $motorista_id_result = $stmt_motorista->get_result();
             $motorista_id_row = $motorista_id_result->fetch_assoc();
             $motorista_id = $motorista_id_row['id'];
 
-            $veiculo_id_query = "SELECT id FROM veiculos WHERE placa='$placa'";
-            $veiculo_id_result = $conn->query($veiculo_id_query);
+            $veiculo_id_query = "SELECT id FROM veiculos WHERE placa=?";
+            $stmt_veiculo = $conn->prepare($veiculo_id_query);
+            $stmt_veiculo->bind_param("s", $placa);
+            $stmt_veiculo->execute();
+            $veiculo_id_result = $stmt_veiculo->get_result();
             $veiculo_id_row = $veiculo_id_result->fetch_assoc();
             $veiculo_id = $veiculo_id_row['id'];
 
-            // Validação adicional para garantir que a quilometragem de volta seja um valor dentro do intervalo permitido
             if ($quilometragem_volta < 0 || $quilometragem_volta > 1000000) {
                 echo "<p class='error'>Valor da quilometragem inválido. Por favor, insira um valor entre 0 e 1.000.000.</p>";
             } else {
-                // Atualizar registro de saída com informações de volta
                 $sql = "UPDATE entradas_saidas 
-                        SET quilometragem_volta='$quilometragem_volta', data_hora_volta='$data_hora_volta'
-                        WHERE veiculo_id='$veiculo_id' AND motorista_id='$motorista_id' AND quilometragem_volta IS NULL";
+                        SET quilometragem_volta=?, data_hora_volta=?
+                        WHERE veiculo_id=? AND motorista_id=? AND quilometragem_volta IS NULL";
 
-                if ($conn->query($sql) === TRUE) {
-                    // Atualizar status do veículo para 'disponivel'
-                    $update_status_sql = "UPDATE veiculos SET status='disponivel' WHERE id='$veiculo_id'";
-                    $conn->query($update_status_sql);
+                $stmt_update = $conn->prepare($sql);
+                $stmt_update->bind_param("isii", $quilometragem_volta, $data_hora_volta, $veiculo_id, $motorista_id);
+
+                if ($stmt_update->execute()) {
+                    $update_status_sql = "UPDATE veiculos SET status='disponivel' WHERE id=?";
+                    $stmt_status = $conn->prepare($update_status_sql);
+                    $stmt_status->bind_param("i", $veiculo_id);
+                    $stmt_status->execute();
 
                     echo "<p class='success'>Registrado com sucesso</p>";
                 } else {
@@ -103,6 +91,10 @@
                 }
             }
 
+            $stmt_motorista->close();
+            $stmt_veiculo->close();
+            $stmt_update->close();
+            $stmt_status->close();
             $conn->close();
         }
         ?>
@@ -113,4 +105,3 @@
     </div>
 </body>
 </html>
-

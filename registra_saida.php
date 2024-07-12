@@ -1,16 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "teste";
-$password = "test@12345";
-$dbname = "controle_veiculos";
-
-// Cria a conexão
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Verifica a conexão
-if ($conn->connect_error) {
-    die("Conexão falhou: " . $conn->connect_error);
-}
+include 'db_config.php';
 
 // Verifica se o formulário foi submetido
 $message = '';
