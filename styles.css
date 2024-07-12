@@ -6,7 +6,8 @@ body {
     padding: 0;
 }
 .container {
-    width: 50%;
+    width: 90%;
+    max-width: 600px;
     margin: auto;
     padding: 20px;
     border: 1px solid #333;
@@ -64,3 +65,26 @@ th {
 .error {
     color: #FF0000;
 }
+
+/* Responsive Design */
+@media (max-width: 300px) {
+    .container {
+        width: 90%;
+        margin: 0;
+        padding: 10px;
+    }
+    form {
+        flex-direction: column;
+    }
+    input, select {
+        width: 90%;
+        box-sizing: border-box;
+    }
+    input[type="submit"] {
+        width: 90%;
+    }
+    table {
+        font-size: 10px;
+    }
+}
+

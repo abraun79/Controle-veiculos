@@ -18,11 +18,11 @@ sudo tee /var/www/html/veiculos/composer.json << 'EOF'
 }
 EOF
 cd /var/www/html/veiculos
-composer install
+sudo composer install -y
 cd ~/
 
 # Configurar permissões
-sudo chmod -R 755 /var/www/html/
+sudo chmod -R 775 /var/www/html/
 
 # Configurar MySQL
 sudo mysql -e "CREATE DATABASE controle_veiculos;"
@@ -57,7 +57,7 @@ CREATE TABLE entradas_saidas (
 );
 
 INSERT INTO motoristas (nome) VALUES ('Alessandro'), ('Tiago'), ('Rodrigo'), ('Pinheiro');
-INSERT INTO veiculos (placa, status) VALUES ('FORD KA - ATT0944', 'disponivel'), ('FORD KA - AXZ2472', 'disponivel');
+INSERT INTO veiculos (placa, status) VALUES ('ATT-0944', 'disponivel'), ('AXZ-2472', 'disponivel');
 EOF
 
 # Configurar Apache
@@ -73,14 +73,15 @@ sudo a2ensite veiculos.conf
 sudo a2dissite 000-default.conf
 
 #Copiar os arquivos para o /var/www/html/veiculos
+cd /Projetos
 sudo cp *.php *.css /var/www/html/veiculos
-
+cd ~/
 #Dar permissões as pastas
 sudo chown -R www-data:www-data /var/www/html/veiculos
-sudo chmod -R 755 /var/www/html/veiculos
+sudo chmod -R 775 /var/www/html/veiculos
 sudo chown -R www-data:www-data /var/www/html/veiculos/vendor
-sudo chmod -R 755 /var/www/html/veiculos/vendor
+sudo chmod -R 775 /var/www/html/veiculos/vendor
 
-sudo start systemctl apache2
+sudo systemctl start apache2
 
 echo "Instalação e configuração concluídas com sucesso."

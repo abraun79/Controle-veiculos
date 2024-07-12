@@ -25,12 +25,17 @@
                     die("Connection failed: " . $conn->connect_error);
                 }
 
+                $conn->set_charset("utf8");
+
                 // Carregar placas dinamicamente
                 $placas_query = "SELECT placa FROM veiculos";
-                $placas_result = $conn->query($placas_query);
-                while ($placa_row = $placas_result->fetch_assoc()) {
-                    echo '<option value="' . $placa_row['placa'] . '">' . $placa_row['placa'] . '</option>';
+                if ($placas_result = $conn->query($placas_query)) {
+                    while ($placa_row = $placas_result->fetch_assoc()) {
+                        echo '<option value="' . htmlspecialchars($placa_row['placa']) . '">' . htmlspecialchars($placa_row['placa']) . '</option>';
+                    }
+                    $placas_result->free();
                 }
+
                 ?>
             </select>
 
@@ -39,9 +44,11 @@
                 <?php
                 // Carregar motoristas dinamicamente
                 $motoristas_query = "SELECT nome FROM motoristas";
-                $motoristas_result = $conn->query($motoristas_query);
-                while ($motorista_row = $motoristas_result->fetch_assoc()) {
-                    echo '<option value="' . $motorista_row['nome'] . '">' . $motorista_row['nome'] . '</option>';
+                if ($motoristas_result = $conn->query($motoristas_query)) {
+                    while ($motorista_row = $motoristas_result->fetch_assoc()) {
+                        echo '<option value="' . htmlspecialchars($motorista_row['nome']) . '">' . htmlspecialchars($motorista_row['nome']) . '</option>';
+                    }
+                    $motoristas_result->free();
                 }
                 ?>
             </select>
@@ -52,7 +59,8 @@
             <label for="destino">Destino:</label>
             <input type="text" id="destino" name="destino" required>
             
-            <input type="hidden" id="quilometragem_saida" name="quilometragem_saida">
+            <label for="quilometragem_saida">Quilometragem de Saída:</label>
+            <input type="number" id="quilometragem_saida" name="quilometragem_saida" required>
 
             <input type="submit" value="Registrar Saída">
         </form>

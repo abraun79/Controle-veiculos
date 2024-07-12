@@ -13,11 +13,13 @@ if ($conn->connect_error) {
 }
 
 // Verifica se o formulário foi submetido
+$message = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $placa = $_POST['placa'];
     $motorista = $_POST['motorista'];
     $data_hora_saida = $_POST['data_hora_saida'];
     $destino = $_POST['destino'];
+    $quilometragem_saida = $_POST['quilometragem_saida']; // Recebe o valor do formulário
 
     // Busca o ID do veículo
     $stmt = $conn->prepare("SELECT id FROM veiculos WHERE placa = ?");
@@ -45,29 +47,49 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         die("Motorista não encontrado");
     }
 
-    // Consulta a última quilometragem de volta
-    $stmt = $conn->prepare("SELECT quilometragem_volta FROM entradas_saidas WHERE veiculo_id = ? ORDER BY id DESC LIMIT 1");
-    $stmt->bind_param("i", $veiculo_id);
-    $stmt->execute();
-    $stmt->bind_result($quilometragem_volta);
-    $stmt->fetch();
-    $stmt->close();
-
-    // Se não houver registro anterior, define a quilometragem de saída como 0
-    $quilometragem_saida = $quilometragem_volta ?? 0;
-
     // Insere a nova saída
     $stmt = $conn->prepare("INSERT INTO entradas_saidas (veiculo_id, motorista_id, quilometragem_saida, data_hora_saida, destino) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("iiiss", $veiculo_id, $motorista_id, $quilometragem_saida, $data_hora_saida, $destino);
 
     if ($stmt->execute()) {
-        echo "Saída registrada com sucesso!";
+        $message = "Saída registrada com sucesso!";
     } else {
-        echo "Erro ao registrar saída: " . $stmt->error;
+        $message = "Erro ao registrar saída: " . $stmt->error;
     }
 
     $stmt->close();
     $conn->close();
 }
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Saída</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .message-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .message-container form {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="message-container">
+        <p><?php echo htmlspecialchars($message); ?></p>
+        <form action="index.php" method="get">
+            <input type="submit" value="Voltar ao início">
+        </form>
+    </div>
+</body>
+</html>
 
