@@ -8,6 +8,7 @@ sudo apt install -y apache2 php libapache2-mod-php php-mysql mysql-server unzip 
 sudo mkdir -p /var/www/html/veiculos
 
 #Instalar o FPDF
+cd /var/www/html/veiculos
 curl -sS https://getcomposer.org/installer -o composer-setup.php
 sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 sudo tee /var/www/html/veiculos/composer.json << 'EOF'
@@ -17,7 +18,6 @@ sudo tee /var/www/html/veiculos/composer.json << 'EOF'
     }
 }
 EOF
-cd /var/www/html/veiculos
 sudo composer install -y
 cd ~/
 
