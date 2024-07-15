@@ -5,6 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Veículos</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Função para carregar opções dinamicamente
+            function loadOptions(url, selectId) {
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        const select = document.getElementById(selectId);
+                        select.innerHTML = '<option value="" disabled selected>Selecione uma opção</option>';
+                        data.forEach(option => {
+                            const opt = document.createElement('option');
+                            opt.value = option.value;
+                            opt.textContent = option.text;
+                            select.appendChild(opt);
+                        });
+                    })
+                    .catch(error => console.error('Erro ao carregar opções:', error));
+            }
+
+            // Carregar opções de veículos e motoristas
+            loadOptions('load_veiculos.php', 'placa');
+            loadOptions('load_motoristas.php', 'motorista');
+
+            // Validação de formulário
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(event) {
+                const placa = document.getElementById('placa').value;
+                const motorista = document.getElementById('motorista').value;
+                const dataHoraSaida = document.getElementById('data_hora_saida').value;
+                const destino = document.getElementById('destino').value;
+                const quilometragemSaida = document.getElementById('quilometragem_saida').value;
+
+                if (!placa || !motorista || !dataHoraSaida || !destino || !quilometragemSaida) {
+                    event.preventDefault();
+                    alert('Por favor, preencha todos os campos obrigatórios.');
+                }
+            });
+        });
+    </script>
 </head>
 <body>
     <div class="container">
@@ -25,33 +64,12 @@
         <form action="registra_saida.php" method="post">
             <label for="placa">Placa do Veículo:</label>
             <select id="placa" name="placa" required>
-                <option value="" disabled selected>Selecione uma placa</option>
-                <?php
-                function loadOptions($conn, $query, $valueField) {
-                    if ($result = $conn->query($query)) {
-                        if ($result->num_rows > 0) {
-                            while ($row = $result->fetch_assoc()) {
-                                echo '<option value="' . htmlspecialchars($row[$valueField]) . '">' . htmlspecialchars($row[$valueField]) . '</option>';
-                            }
-                        } else {
-                            echo '<option value="">Nenhum resultado encontrado</option>';
-                        }
-                        $result->free();
-                    } else {
-                        echo '<option value="">Erro ao carregar opções</option>';
-                    }
-                }
-
-                loadOptions($conn, "SELECT placa FROM veiculos", "placa");
-                ?>
+                <option value="" disabled selected>Carregando...</option>
             </select>
 
             <label for="motorista">Motorista:</label>
             <select id="motorista" name="motorista" required>
-                <option value="" disabled selected>Selecione um motorista</option>
-                <?php
-                loadOptions($conn, "SELECT nome FROM motoristas", "nome");
-                ?>
+                <option value="" disabled selected>Carregando...</option>
             </select>
 
             <label for="data_hora_saida">Data e Hora de Saída:</label>
@@ -85,3 +103,4 @@
     </div>
 </body>
 </html>
+
