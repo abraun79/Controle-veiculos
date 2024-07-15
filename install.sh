@@ -73,7 +73,7 @@ sudo a2ensite veiculos.conf
 sudo a2dissite 000-default.conf
 
 #Copiar os arquivos para o /var/www/html/veiculos
-cd /Projetos
+cd /Projeto
 sudo cp *.php *.css /var/www/html/veiculos
 cd ~/
 #Dar permissões as pastas
