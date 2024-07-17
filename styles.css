@@ -67,21 +67,21 @@ th {
 }
 
 /* Responsive Design */
-@media (max-width: 300px) {
+@media (max-width: 600px) {
     .container {
-        width: 90%;
+        width: 100%;
         margin: 0;
-        padding: 10px;
+        padding: 100px;
     }
     form {
         flex-direction: column;
     }
     input, select {
-        width: 90%;
+        width: 100%;
         box-sizing: border-box;
     }
     input[type="submit"] {
-        width: 90%;
+        width: 100%;
     }
     table {
         font-size: 10px;
