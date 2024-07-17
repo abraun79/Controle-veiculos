@@ -1,48 +1,62 @@
 <?php
 include 'db_config.php';
 
-// Trata a submissão do formulário para adicionar veículo
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_vehicle'])) {
-    $placa = $_POST['placa'];
-    $status = $_POST['status'];
-    $sql = "INSERT INTO veiculos (placa, status) VALUES ('$placa', '$status')";
-    if ($conn->query($sql) === TRUE) {
-        echo "Novo veículo adicionado com sucesso";
-    } else {
-        echo "Erro: " . $sql . "<br>" . $conn->error;
-    }
+function sanitize_input($data) {
+    return htmlspecialchars(stripslashes(trim($data)));
 }
 
-// Trata a submissão do formulário para excluir veículo
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_vehicle'])) {
-    $vehicle_id = $_POST['vehicle_id'];
-    $sql = "DELETE FROM veiculos WHERE id=$vehicle_id";
-    if ($conn->query($sql) === TRUE) {
-        echo "Veículo excluído com sucesso";
-    } else {
-        echo "Erro: " . $sql . "<br>" . $conn->error;
-    }
-}
+$message = '';
+$error = '';
 
-// Trata a submissão do formulário para adicionar motorista
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_driver'])) {
-    $nome = $_POST['nome'];
-    $sql = "INSERT INTO motoristas (nome) VALUES ('$nome')";
-    if ($conn->query($sql) === TRUE) {
-        echo "Novo motorista adicionado com sucesso";
-    } else {
-        echo "Erro: " . $sql . "<br>" . $conn->error;
+// Trata a submissão do formulário para adicionar ou excluir veículo ou motorista
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['add_vehicle'])) {
+        $placa = sanitize_input($_POST['placa']);
+        $status = sanitize_input($_POST['status']);
+        $stmt = $conn->prepare("INSERT INTO veiculos (placa, status) VALUES (?, ?)");
+        $stmt->bind_param("ss", $placa, $status);
+        if ($stmt->execute()) {
+            $message = "Novo veículo adicionado com sucesso.";
+        } else {
+            $error = "Erro ao adicionar veículo: " . $stmt->error;
+        }
+        $stmt->close();
     }
-}
 
-// Trata a submissão do formulário para excluir motorista
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_driver'])) {
-    $driver_id = $_POST['driver_id'];
-    $sql = "DELETE FROM motoristas WHERE id=$driver_id";
-    if ($conn->query($sql) === TRUE) {
-        echo "Motorista excluído com sucesso";
-    } else {
-        echo "Erro: " . $sql . "<br>" . $conn->error;
+    if (isset($_POST['delete_vehicle'])) {
+        $vehicle_id = sanitize_input($_POST['vehicle_id']);
+        $stmt = $conn->prepare("DELETE FROM veiculos WHERE id=?");
+        $stmt->bind_param("i", $vehicle_id);
+        if ($stmt->execute()) {
+            $message = "Veículo excluído com sucesso.";
+        } else {
+            $error = "Erro ao excluir veículo: " . $stmt->error;
+        }
+        $stmt->close();
+    }
+
+    if (isset($_POST['add_driver'])) {
+        $nome = sanitize_input($_POST['nome']);
+        $stmt = $conn->prepare("INSERT INTO motoristas (nome) VALUES (?)");
+        $stmt->bind_param("s", $nome);
+        if ($stmt->execute()) {
+            $message = "Novo motorista adicionado com sucesso.";
+        } else {
+            $error = "Erro ao adicionar motorista: " . $stmt->error;
+        }
+        $stmt->close();
+    }
+
+    if (isset($_POST['delete_driver'])) {
+        $driver_id = sanitize_input($_POST['driver_id']);
+        $stmt = $conn->prepare("DELETE FROM motoristas WHERE id=?");
+        $stmt->bind_param("i", $driver_id);
+        if ($stmt->execute()) {
+            $message = "Motorista excluído com sucesso.";
+        } else {
+            $error = "Erro ao excluir motorista: " . $stmt->error;
+        }
+        $stmt->close();
     }
 }
 
@@ -63,6 +77,14 @@ $drivers = $conn->query("SELECT * FROM motoristas");
     <div class="container">
         <h1>Configuração de Veículos e Motoristas</h1>
         
+        <?php if ($message): ?>
+            <p class="success"><?= $message ?></p>
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+            <p class="error"><?= $error ?></p>
+        <?php endif; ?>
+        
         <h2>Adicionar Veículo</h2>
         <form method="post">
             Placa: <input type="text" name="placa" required>
@@ -73,10 +95,10 @@ $drivers = $conn->query("SELECT * FROM motoristas");
         <h2>Excluir Veículo</h2>
         <form method="post">
             Selecione Veículo: 
-            <select name="vehicle_id">
-                <?php while($row = $vehicles->fetch_assoc()) { ?>
+            <select name="vehicle_id" required>
+                <?php while ($row = $vehicles->fetch_assoc()): ?>
                     <option value="<?= $row['id'] ?>"><?= $row['placa'] ?></option>
-                <?php } ?>
+                <?php endwhile; ?>
             </select>
             <input type="submit" name="delete_vehicle" value="Excluir Veículo">
         </form>
@@ -90,13 +112,14 @@ $drivers = $conn->query("SELECT * FROM motoristas");
         <h2>Excluir Motorista</h2>
         <form method="post">
             Selecione Motorista: 
-            <select name="driver_id">
-                <?php while($row = $drivers->fetch_assoc()) { ?>
+            <select name="driver_id" required>
+                <?php while ($row = $drivers->fetch_assoc()): ?>
                     <option value="<?= $row['id'] ?>"><?= $row['nome'] ?></option>
-                <?php } ?>
+                <?php endwhile; ?>
             </select>
             <input type="submit" name="delete_driver" value="Excluir Motorista">
         </form>
+
         <form action="index.php" method="get" style="margin-top: 20px;">
             <input type="submit" value="Voltar ao início">
         </form>
@@ -107,4 +130,3 @@ $drivers = $conn->query("SELECT * FROM motoristas");
 <?php
 $conn->close();
 ?>
-
