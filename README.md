@@ -56,7 +56,7 @@ O script realizará as seguintes tarefas:
 
 ## Uso
 
-Após a instalação, o sistema estará disponível em `http://localhost/`ou no IP no servidor que aplicação estaja instalada. Você pode acessar a interface web para gerenciar os veículos, motoristas e registros de entrada/saída.
+Após a instalação, o sistema estará disponível em `http://localhost/`ou IP do servidor que a aplicação esteja instalada. Você pode acessar a interface web para gerenciar os veículos, motoristas e registros de entrada/saída.
 
 ### Exemplo de Execução
 
