@@ -1,37 +1,36 @@
 #!/bin/bash
 
 # Atualizar e instalar dependências
-sudo apt update
-sudo apt install -y apache2 php libapache2-mod-php php-mysql mysql-server unzip curl php-cli php-mbstring
+apt update
+apt install -y apache2 php libapache2-mod-php php-mysql mysql-server unzip curl php-cli php-mbstring
 
 # Criar estrutura de diretórios e arquivos
-sudo mkdir -p /var/www/html/veiculos
+mkdir -p /var/www/html/veiculos
 
-#Instalar o FPDF
+# Instalar o FPDF
 cd /var/www/html/veiculos
 curl -sS https://getcomposer.org/installer -o composer-setup.php
-sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-sudo tee /var/www/html/veiculos/composer.json << 'EOF'
+php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+tee /var/www/html/veiculos/composer.json << 'EOF'
 {
     "require": {
         "setasign/fpdf": "^1.8"
     }
 }
 EOF
-sudo composer install -y
-cd ~/
+composer install
 
 # Configurar permissões
-sudo chmod -R 775 /var/www/html/
+chmod -R 775 /var/www/html/
 
 # Configurar MySQL
-sudo mysql -e "CREATE DATABASE controle_veiculos;"
-sudo mysql -e "CREATE USER 'teste'@'localhost' IDENTIFIED BY 'test@12345';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON controle_veiculos.* TO 'teste'@'localhost';"
-sudo mysql -e "FLUSH PRIVILEGES;"
+mysql -e "CREATE DATABASE controle_veiculos;"
+mysql -e "CREATE USER 'teste'@'localhost' IDENTIFIED BY 'test@12345';"
+mysql -e "GRANT ALL PRIVILEGES ON controle_veiculos.* TO 'teste'@'localhost';"
+mysql -e "FLUSH PRIVILEGES;"
 
 # Criar tabelas no MySQL
-sudo mysql -u teste -p'test@12345' controle_veiculos << EOF
+mysql -u teste -p'test@12345' controle_veiculos << EOF
 CREATE TABLE veiculos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     placa VARCHAR(10) NOT NULL,
@@ -61,7 +60,7 @@ INSERT INTO veiculos (placa, status) VALUES ('ATT-0944', 'disponivel'), ('AXZ-24
 EOF
 
 # Configurar Apache
-sudo sh -c 'echo "<VirtualHost *:80>
+sh -c 'echo "<VirtualHost *:80>
     DocumentRoot /var/www/html/veiculos
     <Directory /var/www/html/veiculos>
         AllowOverride All
@@ -69,19 +68,22 @@ sudo sh -c 'echo "<VirtualHost *:80>
     </Directory>
 </VirtualHost>" > /etc/apache2/sites-available/veiculos.conf'
 
-sudo a2ensite veiculos.conf
-sudo a2dissite 000-default.conf
+a2ensite veiculos.conf
+a2dissite 000-default.conf
 
-#Copiar os arquivos para o /var/www/html/veiculos
+# Habilitar o módulo rewrite do Apache
+a2enmod rewrite
+
+# Copiar os arquivos para o /var/www/html/veiculos
 cd /Projeto
-sudo cp *.php *.css /var/www/html/veiculos
+cp *.php *.css /var/www/html/veiculos
 cd ~/
-#Dar permissões as pastas
-sudo chown -R www-data:www-data /var/www/html/veiculos
-sudo chmod -R 775 /var/www/html/veiculos
-sudo chown -R www-data:www-data /var/www/html/veiculos/vendor
-sudo chmod -R 775 /var/www/html/veiculos/vendor
 
-sudo systemctl start apache2
+# Dar permissões às pastas
+chown -R www-data:www-data /var/www/html/veiculos
+chmod -R 775 /var/www/html/veiculos
+
+# Reiniciar o Apache para aplicar as mudanças
+systemctl reload apache2
 
 echo "Instalação e configuração concluídas com sucesso."
