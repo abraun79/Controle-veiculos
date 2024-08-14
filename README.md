@@ -62,6 +62,7 @@ Após a instalação, o sistema estará disponível em `http://localhost/`ou IP 
 
 ```bash
 sudo ./install.sh
+```
 
 O script configurará automaticamente o ambiente e iniciará o servidor Apache. Se tudo correr conforme o esperado, você verá a mensagem "Instalação e configuração concluídas com sucesso.".
 
