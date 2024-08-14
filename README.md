@@ -89,9 +89,9 @@ O script de instalação cria o banco de dados e as tabelas necessárias automat
 
  O banco de dados contém as seguintes tabelas:
 
-- veiculos: Armazena informações dos veículos.
-- motoristas: Armazena informações dos motoristas.
-- entradas_saidas: Registra entradas e saídas de veículos.
+- `veiculos:` Armazena informações dos veículos.
+- `motoristas:` Armazena informações dos motoristas.
+- `entradas_saidas:` Registra entradas e saídas de veículos.
 
 ## Licença
 
