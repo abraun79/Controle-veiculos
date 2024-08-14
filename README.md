@@ -75,6 +75,6 @@ O script configurará automaticamente o ambiente e iniciará o servidor Apache. 
 ├── /var/www/html/veiculos # Diretório principal da aplicação
 └── composer.json         # Arquivo de configuração do Composer
 ```
-. install.sh: Script principal que realiza a instalação e configuração.
-. /var/www/html/veiculos: Diretório onde a aplicação web será instalada.
-. composer.json: Arquivo que define as dependências PHP, como o FPDF.
+- install.sh: Script principal que realiza a instalação e configuração.
+- /var/www/html/veiculos: Diretório onde a aplicação web será instalada.
+- composer.json: Arquivo que define as dependências PHP, como o FPDF.
