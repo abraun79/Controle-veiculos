@@ -1,0 +1,1 @@
+Este README fornece uma documentação completa e detalhada sobre o projeto, garantindo que qualquer pessoa que deseje usar ou contribuir com o projeto tenha todas as informações necessárias. Certifique-se de personalizar o link do repositório GitHub e outros detalhes conforme necessário.
