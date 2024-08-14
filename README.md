@@ -75,17 +75,17 @@ O script configurará automaticamente o ambiente e iniciará o servidor Apache. 
 ├── /var/www/html/veiculos # Diretório principal da aplicação
 └── composer.json         # Arquivo de configuração do Composer
 ```
-- install.sh: Script principal que realiza a instalação e configuração.
-- /var/www/html/veiculos: Diretório onde a aplicação web será instalada.
-- composer.json: Arquivo que define as dependências PHP, como o FPDF.
+- `nstall.sh:` Script principal que realiza a instalação e configuração.
+- `/var/www/html/veiculos:` Diretório onde a aplicação web será instalada.
+- `composer.json:` Arquivo que define as dependências PHP, como o FPDF.
 
 ## Configurações do Banco de Dados
 
 O script de instalação cria o banco de dados e as tabelas necessárias automaticamente. As credenciais padrão são:
 
-- Banco de Dados: controle_veiculos
-- Usuário: teste (Usuário de sua preferência)
-- Senha: test@12345 (Senha de sua Preferência)
+- `Banco de Dados:` controle_veiculos
+- `Usuário:` teste (Usuário de sua preferência)
+- `Senha:` test@12345 (Senha de sua Preferência)
 
  O banco de dados contém as seguintes tabelas:
 
