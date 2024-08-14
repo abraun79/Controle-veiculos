@@ -78,3 +78,25 @@ O script configurará automaticamente o ambiente e iniciará o servidor Apache. 
 - install.sh: Script principal que realiza a instalação e configuração.
 - /var/www/html/veiculos: Diretório onde a aplicação web será instalada.
 - composer.json: Arquivo que define as dependências PHP, como o FPDF.
+
+## Configurações do Banco de Dados
+
+O script de instalação cria o banco de dados e as tabelas necessárias automaticamente. As credenciais padrão são:
+
+- Banco de Dados: controle_veiculos
+- Usuário: teste (Usuário de sua preferência)
+- Senha: test@12345 (Senha de sua Preferência)
+
+ O banco de dados contém as seguintes tabelas:
+
+- veiculos: Armazena informações dos veículos.
+- motoristas: Armazena informações dos motoristas.
+- entradas_saidas: Registra entradas e saídas de veículos.
+
+## Licença
+
+Este projeto está licenciado sob a Licença MIT. Veja o arquivo LICENSE para mais detalhes.
+
+```
+Este README fornece uma documentação completa e detalhada sobre o projeto, garantindo que qualquer pessoa que deseje usar ou contribuir com o projeto tenha todas as informações necessárias. Certifique-se de personalizar o link do repositório GitHub e outros detalhes conforme necessário.
+```
