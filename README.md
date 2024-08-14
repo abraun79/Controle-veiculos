@@ -66,4 +66,15 @@ sudo ./install.sh
 
 O script configurará automaticamente o ambiente e iniciará o servidor Apache. Se tudo correr conforme o esperado, você verá a mensagem "Instalação e configuração concluídas com sucesso.".
 
-##Estrutura do Projeto
+## Estrutura do Projeto
+```
+├── install.sh            # Script principal de instalação
+├── README.md             # Documentação do projeto
+├── config/               # Arquivos de configuração adicionais
+├── scripts/              # Scripts auxiliares
+├── /var/www/html/veiculos # Diretório principal da aplicação
+└── composer.json         # Arquivo de configuração do Composer
+```
+. install.sh: Script principal que realiza a instalação e configuração.
+. /var/www/html/veiculos: Diretório onde a aplicação web será instalada.
+. composer.json: Arquivo que define as dependências PHP, como o FPDF.
