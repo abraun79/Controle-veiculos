@@ -86,15 +86,15 @@ The script will automatically configure the environment and start the Apache ser
 
 The installation script automatically creates the database and necessary tables. The default credentials are:
 
--`Database:` controle_veiculos
--`User:` teste (User of your choice)
--`Password:` test@12345 (Password of your choice)
+- `Database:` controle_veiculos
+- `User:` teste (User of your choice)
+- `Password:` test@12345 (Password of your choice)
 
 The database contains the following tables:
 
--`veiculos:` Stores vehicle information.
--`motoristas:` Stores driver information.
--`entradas_saidas:` Records vehicle entries and exits.
+- `veiculos:` Stores vehicle information.
+- `motoristas:` Stores driver information.
+- `entradas_saidas:` Records vehicle entries and exits.
 
 ### Contributing
 
