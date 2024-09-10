@@ -1,3 +1,6 @@
+<img height="20px"  src="https://i.imgur.com/1ubgfmC.png"><a href="README.md"> – Leia em português!</a><br/>
+<img height="20px"  src="https://i.imgur.com/UrpOBOr.png"><a href="README-us.md"> – Read in English!</a>
+
 # Vehicle Control System
 
 This project is a vehicle control system developed in PHP and MySQL, configured and installed automatically through a Shell Script. The script handles all the necessary installations, including Apache, PHP, MySQL, and additional libraries such as FPDF.
