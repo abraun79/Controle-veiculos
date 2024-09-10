@@ -1,5 +1,5 @@
-<img height="20px"  src="https://i.imgur.com/1ubgfmC.png"><a href="README.md"> – Leia em português!</a><br/>
-<img height="20px"  src="https://i.imgur.com/UrpOBOr.png"><a href="README-us.md"> – Read in English!</a>
+<img height="20px"  src="https://i.imgur.com/1ubgfmC.png"><a href="README.md">  Leia em português!</a><br/>
+<img height="20px"  src="https://i.imgur.com/UrpOBOr.png"><a href="README-us.md">  Read in English!</a>
 
 # Vehicle Control System
 
