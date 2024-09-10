@@ -104,7 +104,7 @@ Este projeto está licenciado sob a Licença MIT. Veja o arquivo LICENSE para ma
 ```
 MIT License
 
-Copyright (c) 2019 Alessandro Braun
+Copyright (c) 2024 Alessandro Braun
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
